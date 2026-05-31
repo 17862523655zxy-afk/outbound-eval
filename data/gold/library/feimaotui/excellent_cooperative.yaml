@@ -1,0 +1,75 @@
+conversation_id: "feimaotui_excellent_coop_001"
+task_id: "feimaotui_contract"
+persona_type: "cooperative"
+scenario: "骑手积极配合，正常流程"
+quality_level: "excellent"
+
+turns:
+  - turn_number: 1
+    speaker: "agent"
+    content: "你好，请问是张明吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单。"
+    annotations:
+      key_moment: true
+      strategy: "opening_with_info"
+
+  - turn_number: 2
+    speaker: "user"
+    content: "是，我是张明。"
+    annotations:
+      identity_confirmed: true
+
+  - turn_number: 3
+    speaker: "agent"
+    content: "好的张明。你的合同今天已生效，你今天可以开始配送吗？"
+    annotations:
+      next_step: "confirm_commitment"
+
+  - turn_number: 4
+    speaker: "user"
+    content: "可以的，我马上上线。"
+    annotations:
+      commitment_obtained: true
+
+  - turn_number: 5
+    speaker: "agent"
+    content: "好的，注意安全，有问题随时联系我。"
+    annotations:
+      safety_reminder: true
+      conversation_end: true
+
+annotations:
+  key_moments:
+    - turn: 1
+      type: "info_delivery"
+      note: "完整传递了合同信息"
+    - turn: 3
+      type: "commitment_request"
+      note: "明确请求承诺"
+    - turn: 5
+      type: "safety_reminder"
+      note: "自然结束语包含安全提醒"
+
+  strategy_markers:
+    - turn: 1
+      marker: "PACE"
+      note: "语速适中，信息完整"
+    - turn: 3
+      marker: "CLARITY"
+      note: "问题明确，用户易回答"
+
+  compliance_indicators:
+    - indicator: "response_length"
+      status: "pass"
+      max_chars: 45
+    - indicator: "casual_tone"
+      status: "pass"
+    - indicator: "no_promises"
+      status: "pass"
+
+tags:
+  - "standard_flow"
+  - "positive_outcome"
+  - "short_conversation"
+
+created_at: "2026-05-31T00:00:00"
+source: "expert"

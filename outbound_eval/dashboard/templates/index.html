@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OutboundEval - Agent 评测平台</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --bg-elevated: #161922;
+            --bg-hover: #1e212b;
+            --bg-card: #1a1d27;
+            --border: #2a2e3b;
+            --border-subtle: #232632;
+            --text: #e8eaf0;
+            --text-secondary: #8b92a8;
+            --text-muted: #5a6078;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --orange: #f97316;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .app { display: flex; height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            padding: 16px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 24px; height: 24px; border-radius: 6px;
+            background: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+        }
+
+        .nav { padding: 8px 0; flex: 1; }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 16px; margin: 2px 8px;
+            border-radius: 6px; cursor: pointer;
+            color: var(--text-secondary); font-size: 13px;
+            transition: all 0.15s;
+        }
+
+        .nav-item:hover { background: var(--bg-hover); color: var(--text); }
+        .nav-item.active { background: var(--bg-hover); color: var(--text); }
+        .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+        .nav-section { padding: 12px 16px 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+
+        /* Main */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; flex-shrink: 0;
+        }
+
+        .breadcrumbs { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+        .breadcrumbs a { color: var(--text-secondary); text-decoration: none; cursor: pointer; }
+        .breadcrumbs a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-muted); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+        .btn {
+            padding: 6px 14px; border-radius: 6px; font-size: 13px;
+            border: 1px solid var(--border); background: var(--bg-elevated);
+            color: var(--text); cursor: pointer; transition: all 0.15s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+
+        .btn:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+        .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+        .btn-danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--red); }
+
+        /* Content */
+        .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+        /* View */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden;
+        }
+
+        .card-header {
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .card-title { font-size: 13px; font-weight: 600; }
+        .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .card-body { padding: 16px; }
+
+        /* Hero */
+        .hero {
+            padding: 32px; border-radius: 12px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(6,182,212,0.1) 100%);
+            border: 1px solid rgba(99,102,241,0.2);
+            margin-bottom: 24px;
+        }
+
+        .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .hero p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; max-width: 600px; }
+
+        /* Grid */
+        .grid { display: grid; gap: 16px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+        /* Stat Card */
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 16px;
+        }
+
+        .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-value.green { color: var(--green); }
+        .stat-value.red { color: var(--red); }
+        .stat-value.blue { color: var(--blue); }
+
+        /* Table */
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        .table td { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); }
+        .table tr:hover td { background: var(--bg-hover); }
+        .table tr { cursor: pointer; }
+
+        /* Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+        }
+        .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+        .badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+        .badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+        /* Progress */
+        .progress-bar { width: 100%; height: 6px; background: var(--bg-hover); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+        .progress-fill.green { background: var(--green); }
+        .progress-fill.red { background: var(--red); }
+        .progress-fill.blue { background: var(--blue); }
+
+        /* Run Monitor */
+        .run-status { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-dot.running { background: var(--green); animation: pulse 1.5s infinite; }
+        .status-dot.pending { background: var(--yellow); }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* Log Stream */
+        .log-stream {
+            font-family: 'Menlo', 'Monaco', monospace; font-size: 12px;
+            line-height: 1.7; max-height: 400px; overflow-y: auto;
+            padding: 12px; background: var(--bg); border-radius: 6px;
+        }
+
+        .log-line { padding: 1px 0; }
+        .log-time { color: var(--text-muted); margin-right: 8px; }
+        .log-info { color: var(--cyan); }
+        .log-pass { color: var(--green); }
+        .log-fail { color: var(--red); }
+        .log-event { color: var(--yellow); }
+
+        /* Chat */
+        .chat { display: flex; flex-direction: column; gap: 12px; }
+        .chat-message { display: flex; gap: 10px; }
+        .chat-avatar { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+        .chat-avatar.agent { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .chat-avatar.user { background: rgba(249,115,22,0.15); color: var(--orange); }
+        .chat-content { padding: 8px 12px; border-radius: 8px; font-size: 13px; max-width: 80%; }
+        .chat-content.agent { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.15); }
+        .chat-content.user { background: var(--bg-hover); border: 1px solid var(--border); }
+
+        /* Timeline */
+        .timeline { display: flex; flex-direction: column; gap: 0; }
+        .timeline-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+        .timeline-content { font-size: 13px; }
+        .timeline-time { font-size: 11px; color: var(--text-muted); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+        .tab {
+            padding: 8px 16px; font-size: 13px; color: var(--text-muted);
+            border: none; background: none; cursor: pointer;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+        /* Metric Bars */
+        .metric { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+        .metric-name { width: 100px; font-size: 12px; color: var(--text-secondary); }
+        .metric-bar { flex: 1; height: 6px; background: var(--bg-hover); border-radius: 3px; overflow: hidden; }
+        .metric-fill { height: 100%; border-radius: 3px; }
+        .metric-value { width: 36px; text-align: right; font-size: 12px; font-weight: 600; }
+
+        /* Spacing */
+        .mb-2 { margin-bottom: 8px; }
+        .mb-3 { margin-bottom: 12px; }
+        .mb-4 { margin-bottom: 16px; }
+        .mb-6 { margin-bottom: 24px; }
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+        .gap-4 { gap: 16px; }
+
+        /* Empty */
+        .empty { text-align: center; padding: 48px; color: var(--text-muted); }
+        .empty h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-input {
+            width: 100%; padding: 8px 12px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-size: 13px;
+            outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: var(--accent); }
+        .form-input::placeholder { color: var(--text-muted); }
+        select.form-input { cursor: pointer; }
+
+        /* Theme: light */
+        html[data-theme="light"] {
+            --bg: #f5f6f8;
+            --bg-elevated: #ffffff;
+            --bg-hover: #eef0f4;
+            --bg-card: #ffffff;
+            --border: #e2e4ea;
+            --border-subtle: #eef0f4;
+            --text: #1a1d27;
+            --text-secondary: #5a6078;
+            --text-muted: #8b92a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">OE</div>
+                OutboundEval
+            </div>
+            <nav class="nav">
+                <div class="nav-item active" onclick="showView('home')" data-view="home">
+                    <span class="icon">◈</span> 工作台
+                </div>
+                <div class="nav-item" onclick="showView('evals')" data-view="evals">
+                    <span class="icon">▤</span> 评测记录
+                </div>
+                <div class="nav-item" onclick="showView('benchmarks')" data-view="benchmarks">
+                    <span class="icon">◉</span> Benchmarks
+                </div>
+                <div class="nav-item" onclick="showView('datasets')" data-view="datasets">
+                    <span class="icon">◫</span> 数据集
+                </div>
+                <div class="nav-section">分析</div>
+                <div class="nav-item" onclick="showView('persona')" data-view="persona">
+                    <span class="icon">◎</span> 画像分析
+                </div>
+                <div class="nav-item" onclick="showView('failures')" data-view="failures">
+                    <span class="icon">◐</span> 失败归因
+                </div>
+                <div class="nav-item" onclick="showView('difficulty')" data-view="difficulty">
+                    <span class="icon">◔</span> 难度分析
+                </div>
+                <div class="nav-item" onclick="showView('heatmap')" data-view="heatmap">
+                    <span class="icon">▦</span> 失败热力图
+                </div>
+                <div class="nav-item" onclick="showView('trajectories')" data-view="trajectories">
+                    <span class="icon">↗</span> 成功路径
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="breadcrumbs" id="breadcrumbs">
+                    <a onclick="showView('home')">工作台</a>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-sm" id="theme-toggle" onclick="toggleTheme()">◐</button>
+                    <button class="btn btn-sm" onclick="showSettings()">⚙ Settings</button>
+                </div>
+            </header>
+
+            <div class="content" id="content-area">
+                <!-- Level 1: Home -->
+                <div class="view active" id="view-home">
+                    <div class="hero">
+                        <h1>复杂外呼场景评测平台</h1>
+                        <p>多轮对话 Agent 自动化评测系统。生成复杂用户画像、注入事件、自动评分、分析失败原因。</p>
+                        <button class="btn btn-primary" onclick="startNewRun()">+ 新建评测</button>
+                    </div>
+
+                    <div class="grid grid-4 mb-6">
+                        <div class="stat-card">
+                            <div class="stat-label">总评测次数</div>
+                            <div class="stat-value" id="home-total-runs">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">平均成功率</div>
+                            <div class="stat-value blue" id="home-avg-success">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">评测 Case 总数</div>
+                            <div class="stat-value" id="home-total-cases">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">最近评测</div>
+                            <div class="stat-value" style="font-size: 14px; padding-top: 10px;" id="home-last-run">-</div>
+                        </div>
+                    </div>
+
+                    <div class="flex-between mb-3">
+                        <h3 style="font-size: 14px; font-weight: 600;">最近评测</h3>
+                        <button class="btn btn-sm" onclick="showView('evals')">查看全部 →</button>
+                    </div>
+                    <div class="card mb-6">
+                        <table class="table" id="home-recent-table">
+                            <thead><tr><th>任务名称</th><th>时间</th><th>Case数</th><th>通过</th><th>失败</th><th>成功率</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <div><div class="card-title">可用 Benchmarks</div></div>
+                                <button class="btn btn-sm">管理</button>
+                            </div>
+                            <div class="card-body" id="home-benchmarks">
+                                <div class="empty"><p>加载中...</p></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <div><div class="card-title">评测数据集</div></div>
+                                <button class="btn btn-sm">管理</button>
+                            </div>
+                            <div class="card-body" id="home-datasets">
+                                <div class="empty"><p>加载中...</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level 2: New Run Config -->
+                <div class="view" id="view-new-run">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">新建评测</h2>
+                    <div class="grid grid-2" style="max-width: 800px;">
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">评测配置</div></div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>任务名称 <span style="color:var(--red);">*</span></label>
+                                    <input type="text" class="form-input" id="config-run-name" placeholder="输入评测任务名称" oninput="updateConfigPreview()" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>业务场景</label>
+                                    <select class="form-input" id="config-task" onchange="updateConfigPreview()">
+                                        <option value="feimaotui_contract">飞毛腿合同签署通知</option>
+                                        <option value="live_course_upgrade">课程发布页面升级</option>
+                                        <option value="custom">自定义任务</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>用户画像类型</label>
+                                    <select class="form-input" id="config-persona" onchange="updateConfigPreview()">
+                                        <option value="all">全部混合</option>
+                                        <option value="cooperative">配合型</option>
+                                        <option value="indecisive">犹豫型</option>
+                                        <option value="rejection">拒绝型</option>
+                                        <option value="emotional">情绪化</option>
+                                        <option value="off_topic">跑题型</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>对话难度</label>
+                                    <select class="form-input" id="config-difficulty" onchange="updateConfigPreview()">
+                                        <option value="easy">Easy</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="hard">Hard</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Case 数量</label>
+                                    <select class="form-input" id="config-count" onchange="updateConfigPreview()">
+                                        <option value="5">5</option>
+                                        <option value="10" selected>10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card mb-4">
+                                <div class="card-header"><div class="card-title">配置预览</div></div>
+                                <div class="card-body" id="config-preview" style="color: var(--text-secondary);">
+                                    <p>选择配置后查看预览</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button class="btn btn-primary" onclick="confirmStartRun()">开始评测</button>
+                                <button class="btn" onclick="showView('home')">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level 2: Run -->
+                <div class="view" id="view-run">
+                    <div class="flex-between mb-4">
+                        <h2 style="font-size: 18px; font-weight: 700;">评测运行中</h2>
+                        <button class="btn btn-danger btn-sm" onclick="stopRun()">■ 停止</button>
+                    </div>
+
+                    <div class="grid grid-4 mb-4">
+                        <div class="stat-card">
+                            <div class="stat-label">进度</div>
+                            <div class="stat-value" id="run-progress">0/0</div>
+                            <div class="progress-bar mt-2"><div class="progress-fill blue" id="run-progress-bar" style="width:0%"></div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">成功率</div>
+                            <div class="stat-value green" id="run-success-rate">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">通过 / 失败</div>
+                            <div class="stat-value" id="run-pass-fail">0 / 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">当前 Case</div>
+                            <div class="stat-value" style="font-size: 14px; padding-top: 8px;" id="run-current">-</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">执行日志</div></div>
+                            <div class="card-body"><div class="log-stream" id="run-logs"></div></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">实时统计</div></div>
+                            <div class="card-body" id="run-stats">
+                                <div class="metric"><div class="metric-name">Cooperative</div><div class="metric-bar"><div class="metric-fill" style="width:0%; background:var(--green)"></div></div><div class="metric-value">0</div></div>
+                                <div class="metric"><div class="metric-name">Rejection</div><div class="metric-bar"><div class="metric-fill" style="width:0%; background:var(--red)"></div></div><div class="metric-value">0</div></div>
+                                <div class="metric"><div class="metric-name">Emotional</div><div class="metric-bar"><div class="metric-fill" style="width:0%; background:var(--yellow)"></div></div><div class="metric-value">0</div></div>
+                                <div class="metric"><div class="metric-name">Off Topic</div><div class="metric-bar"><div class="metric-fill" style="width:0%; background:var(--orange)"></div></div><div class="metric-value">0</div></div>
+                                <div class="metric"><div class="metric-name">Indecisive</div><div class="metric-bar"><div class="metric-fill" style="width:0%; background:var(--blue)"></div></div><div class="metric-value">0</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level 3: Evaluation Detail -->
+                <div class="view" id="view-eval-detail">
+                    <div class="flex-between mb-4">
+                        <div>
+                            <h2 style="font-size: 18px; font-weight: 700;" id="eval-title">评测详情</h2>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;" id="eval-subtitle">-</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-sm" onclick="downloadEvalReport()">下载报告</button>
+                            <button class="btn btn-primary btn-sm" onclick="rerunEval()">重新运行</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-5 mb-4">
+                        <div class="stat-card">
+                            <div class="stat-label">成功率</div>
+                            <div class="stat-value" id="eval-success-rate">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">平均得分</div>
+                            <div class="stat-value blue" id="eval-avg-score">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">通过 / 失败</div>
+                            <div class="stat-value" id="eval-pass-fail">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">批次名称</div>
+                            <div class="stat-value" style="font-size: 14px; padding-top: 8px;" id="eval-run-name">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">总耗时</div>
+                            <div class="stat-value" style="font-size: 14px; padding-top: 8px;" id="eval-duration">-</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Case 列表</div>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="table" id="eval-case-table">
+                                <thead><tr><th>#</th><th>场景ID</th><th>画像</th><th>难度</th><th>得分</th><th>状态</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level 4: Case Detail -->
+                <div class="view" id="view-case-detail">
+                    <div class="flex-between mb-4">
+                        <div class="flex gap-3">
+                            <button class="btn btn-sm" onclick="backToEval()">← 返回评测结果</button>
+                            <div>
+                                <h2 style="font-size: 18px; font-weight: 700;" id="case-id">Case #</h2>
+                                <p style="color: var(--text-muted); font-size: 12px;" id="case-meta">-</p>
+                            </div>
+                        </div>
+                        <span class="badge" id="case-status">-</span>
+                    </div>
+
+                    <!-- Row 1: Persona Profile + Metrics -->
+                    <div class="grid grid-2 mb-4">
+                        <!-- Persona Profile -->
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">用户画像</div></div>
+                            <div class="card-body" id="case-persona"></div>
+                        </div>
+                        <!-- Metrics Detail -->
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">评测细项</div></div>
+                            <div class="card-body" id="case-metrics-detail"></div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Analysis -->
+                    <div class="card mb-4" id="case-analysis-card">
+                        <div class="card-header"><div class="card-title">分析诊断</div></div>
+                        <div class="card-body" id="case-analysis"></div>
+                    </div>
+
+                    <!-- Row 3: Memory + State + Events -->
+                    <div class="grid grid-3 mb-4">
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">对话记忆</div></div>
+                            <div class="card-body" id="case-memory"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">状态演变</div></div>
+                            <div class="card-body" id="case-state-timeline"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">注入事件</div></div>
+                            <div class="card-body" id="case-events"></div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Dialogue -->
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">完整对话记录</div></div>
+                        <div class="card-body"><div class="chat" id="case-dialogue"></div></div>
+                    </div>
+                </div>
+
+                <!-- Other Views -->
+                <div class="view" id="view-evals">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">评测记录</h2>
+                    <div class="card">
+                        <table class="table" id="evals-table">
+                            <thead><tr><th>任务名称</th><th>时间</th><th>Case数</th><th>成功</th><th>失败</th><th>成功率</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="view" id="view-benchmarks">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Benchmarks</h2>
+                    <div class="card">
+                        <table class="table" id="benchmarks-table">
+                            <thead><tr><th>名称</th><th>描述</th><th>Case数</th><th>最后运行</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="view" id="view-datasets">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">数据集</h2>
+                    <div class="card">
+                        <table class="table" id="datasets-table">
+                            <thead><tr><th>名称</th><th>类型</th><th>记录数</th><th>最后更新</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="view" id="view-persona">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">画像分析</h2>
+                    <div class="card">
+                        <div class="card-body" id="persona-content">
+                            <div class="empty"><p>请先运行评测</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-failures">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">失败归因</h2>
+                    <div class="card">
+                        <div class="card-body" id="failures-content">
+                            <div class="empty"><p>请先运行评测</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-difficulty">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">难度分层分析</h2>
+                    <div class="card">
+                        <div class="card-body" id="difficulty-content">
+                            <div class="empty"><p>请先运行评测</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-heatmap">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">失败热力图</h2>
+                    <div class="card">
+                        <div class="card-body" id="heatmap-content">
+                            <div class="empty"><p>请先运行评测</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-trajectories">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">成功路径分析</h2>
+                    <div class="card">
+                        <div class="card-body" id="trajectories-content">
+                            <div class="empty"><p>请先运行评测</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-settings">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Settings</h2>
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">LLM 配置</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>API Key</label>
+                                    <input type="password" class="form-input" id="settings-api-key" placeholder="留空则不修改">
+                                </div>
+                                <div class="form-group">
+                                    <label>Base URL</label>
+                                    <input type="text" class="form-input" id="settings-base-url">
+                                </div>
+                                <div class="form-group">
+                                    <label>Agent 模型</label>
+                                    <input type="text" class="form-input" id="settings-llm-model">
+                                </div>
+                                <div class="form-group">
+                                    <label>Judge 模型</label>
+                                    <input type="text" class="form-input" id="settings-judge-model">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">评测参数</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>最大轮次</label>
+                                    <input type="number" class="form-input" id="settings-max-turns">
+                                </div>
+                                <div class="form-group">
+                                    <label>目标轮次</label>
+                                    <input type="number" class="form-input" id="settings-target-turns" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label>目标单次成功成本</label>
+                                    <input type="number" class="form-input" id="settings-target-cost" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label>Token 单价 (per 1K)</label>
+                                    <input type="number" class="form-input" id="settings-token-price" step="0.0001">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Dashboard</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Host</label>
+                                    <input type="text" class="form-input" id="settings-host">
+                                </div>
+                                <div class="form-group">
+                                    <label>Port</label>
+                                    <input type="number" class="form-input" id="settings-port">
+                                </div>
+                                <div class="form-group">
+                                    <label>Log Level</label>
+                                    <select class="form-input" id="settings-log-level">
+                                        <option value="DEBUG">DEBUG</option>
+                                        <option value="INFO">INFO</option>
+                                        <option value="WARNING">WARNING</option>
+                                        <option value="ERROR">ERROR</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+                        <button class="btn" onclick="showView('home')">取消</button>
+                        <span id="settings-msg" style="color: var(--green); font-size: 13px; line-height: 32px;"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State
+        let currentTask = 'feimaotui_contract';
+        let allResults = [];
+        let currentEvalResults = [];
+        let runMonitorInterval = null;
+        let evalHistory = [];
+
+        // Navigation
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById('view-' + viewName)?.classList.add('active');
+            document.querySelector(`.nav-item[data-view="${viewName}"]`)?.classList.add('active');
+
+            updateBreadcrumbs(viewName);
+
+            if (viewName === 'home') loadHomeData();
+            if (viewName === 'evals') loadEvalsList();
+            if (viewName === 'benchmarks') loadBenchmarks();
+            if (viewName === 'datasets') loadDatasets();
+            if (viewName === 'persona') loadPersonaAnalysis();
+            if (viewName === 'failures') loadFailureAnalysis();
+            if (viewName === 'difficulty') loadDifficultyAnalysis();
+            if (viewName === 'heatmap') loadHeatmap();
+            if (viewName === 'trajectories') loadTrajectories();
+        }
+
+        function updateBreadcrumbs(viewName) {
+            const map = {
+                home: '<a onclick="showView(\'home\')">工作台</a>',
+                evals: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'evals\')">评测记录</a>',
+                benchmarks: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'benchmarks\')">Benchmarks</a>',
+                datasets: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'datasets\')">数据集</a>',
+                persona: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'persona\')">画像分析</a>',
+                failures: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'failures\')">失败归因</a>',
+                difficulty: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'difficulty\')">难度分析</a>',
+                heatmap: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'heatmap\')">失败热力图</a>',
+                trajectories: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'trajectories\')">成功路径</a>',
+                settings: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><span>Settings</span>',
+            };
+            document.getElementById('breadcrumbs').innerHTML = map[viewName] || '';
+        }
+
+        // Level 1: Home
+        async function loadHomeData() {
+            try {
+                const resp = await fetch('/api/v1/results?task_id=' + currentTask);
+                const data = await resp.json();
+                allResults = data.results || [];
+
+                // Group by run_id for all home stats
+                const runs = {};
+                allResults.forEach(r => {
+                    const rid = r.run_id || 'unknown';
+                    if (!runs[rid]) {
+                        runs[rid] = { run_id: rid, run_name: r.run_name || rid, timestamp: r.timestamp, results: [] };
+                    }
+                    runs[rid].results.push(r);
+                });
+                const runList = Object.values(runs).sort((a, b) => b.timestamp - a.timestamp);
+
+                document.getElementById('home-total-runs').textContent = runList.length || '-';
+                const avgSuccess = allResults.length > 0
+                    ? (allResults.filter(r => r.passed).length / allResults.length * 100).toFixed(0) + '%'
+                    : '-';
+                document.getElementById('home-avg-success').textContent = avgSuccess;
+                document.getElementById('home-total-cases').textContent = allResults.length || '-';
+                document.getElementById('home-last-run').textContent = runList.length > 0
+                    ? new Date(runList[0].timestamp * 1000).toLocaleString()
+                    : '-';
+
+                // Recent table - group by run_id
+                const tbody = document.querySelector('#home-recent-table tbody');
+                if (allResults.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无评测记录</td></tr>';
+                } else {
+                    // Group by run_id
+                    const runs = {};
+                    allResults.forEach(r => {
+                        const rid = r.run_id || 'unknown';
+                        if (!runs[rid]) {
+                            runs[rid] = {
+                                run_id: rid,
+                                run_name: r.run_name || rid,
+                                task_id: r.task_id,
+                                timestamp: r.timestamp,
+                                results: [],
+                            };
+                        }
+                        runs[rid].results.push(r);
+                    });
+                    const runList = Object.values(runs).sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+                    tbody.innerHTML = runList.map(run => {
+                        const total = run.results.length;
+                        const passed = run.results.filter(r => r.passed).length;
+                        const failed = total - passed;
+                        const rate = total > 0 ? (passed / total * 100).toFixed(0) : 0;
+                        const time = new Date(run.timestamp * 1000).toLocaleString();
+                        return `
+                            <tr onclick="showEvalDetailByRun('${run.run_id}')" style="cursor:pointer;">
+                                <td><strong>${run.run_name}</strong></td>
+                                <td>${time}</td>
+                                <td>${total}</td>
+                                <td><span class="badge badge-green">${passed}</span></td>
+                                <td><span class="badge badge-red">${failed}</span></td>
+                                <td><strong>${rate}%</strong></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                // Benchmarks - real data from API
+                try {
+                    const tasksResp = await fetch('/api/v1/tasks');
+                    const tasksData = await tasksResp.json();
+                    const tasks = tasksData.tasks || [];
+                    document.getElementById('home-benchmarks').innerHTML = tasks.map(t => `
+                        <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+                            <div><div style="font-weight: 500;">${t.name}</div><div style="font-size: 12px; color: var(--text-muted);">${t.description}</div></div>
+                            <span class="badge badge-blue">${t.skill_name}</span>
+                        </div>
+                    `).join('');
+                } catch (e) {
+                    document.getElementById('home-benchmarks').innerHTML = '<div class="empty"><p>加载失败</p></div>';
+                }
+
+                // Datasets - real stats
+                try {
+                    const taskCount = runList.length;
+                    const caseCount = allResults.length;
+                    const personaTypes = new Set(allResults.map(r => r.persona_type).filter(Boolean)).size;
+                    document.getElementById('home-datasets').innerHTML = `
+                        <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+                            <div><div style="font-weight: 500;">评测任务</div><div style="font-size: 12px; color: var(--text-muted);">已保存的评测批次</div></div>
+                            <span class="badge badge-blue">${taskCount} 批</span>
+                        </div>
+                        <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+                            <div><div style="font-weight: 500;">评测 Case</div><div style="font-size: 12px; color: var(--text-muted);">总对话记录数</div></div>
+                            <span class="badge badge-green">${caseCount} 条</span>
+                        </div>
+                        <div class="flex-between" style="padding: 8px 0;">
+                            <div><div style="font-weight: 500;">画像覆盖</div><div style="font-size: 12px; color: var(--text-muted);">用户画像类型数</div></div>
+                            <span class="badge badge-yellow">${personaTypes} 种</span>
+                        </div>
+                    `;
+                } catch (e) {
+                    document.getElementById('home-datasets').innerHTML = '<div class="empty"><p>加载失败</p></div>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Start new run
+        function startNewRun() {
+            showView('new-run');
+            document.getElementById('breadcrumbs').innerHTML = `
+                <a onclick="showView('home')">工作台</a><span class="breadcrumb-sep">/</span><span>新建评测</span>
+            `;
+            updateConfigPreview();
+        }
+
+        function updateConfigPreview() {
+            const task = document.getElementById('config-task');
+            const persona = document.getElementById('config-persona').value;
+            const difficulty = document.getElementById('config-difficulty').value;
+            const count = document.getElementById('config-count').value;
+            const runName = document.getElementById('config-run-name').value.trim();
+
+            const taskName = task.options[task.selectedIndex].text;
+            const personaName = persona === 'all' ? '全部混合画像' : document.getElementById('config-persona').options[document.getElementById('config-persona').selectedIndex].text;
+
+            let strategyHtml;
+            if (persona !== 'all') {
+                const diffEffects = {
+                    easy: '对话较短，用户更容易被说服',
+                    medium: '标准对话长度，需要一定引导',
+                    hard: '对话较长，用户更坚持己见'
+                };
+                strategyHtml = `
+                    <div style="margin-bottom:10px;"><span style="color:var(--text-muted); font-size:12px;">画像分布</span><div style="font-weight:500;">固定画像：100% ${personaName}</div></div>
+                    <div style="margin-bottom:10px;"><span style="color:var(--text-muted); font-size:12px;">难度效果</span><div style="font-weight:500;">${difficulty.toUpperCase()} - ${diffEffects[difficulty]}</div></div>
+                `;
+            } else {
+                const diffDesc = {
+                    easy: '以配合型为主，低对抗场景',
+                    medium: '混合画像，平衡对抗与合作',
+                    hard: '高对抗画像为主，拒绝/情绪化占多数'
+                };
+                strategyHtml = `
+                    <div style="margin-bottom:10px;"><span style="color:var(--text-muted); font-size:12px;">画像分布</span><div style="font-weight:500;">${personaName}</div></div>
+                    <div style="margin-bottom:10px;"><span style="color:var(--text-muted); font-size:12px;">难度策略</span><div style="font-weight:500;">${difficulty.toUpperCase()} - ${diffDesc[difficulty]}</div></div>
+                `;
+            }
+
+            const nameDisplay = runName ? `<div style="font-weight:600; font-size:15px; margin-bottom:10px;">${runName}</div>` : '';
+
+            document.getElementById('config-preview').innerHTML = `
+                ${nameDisplay}
+                <div style="margin-bottom:10px;"><span style="color:var(--text-muted); font-size:12px;">业务场景</span><div style="font-weight:500;">${taskName}</div></div>
+                ${strategyHtml}
+                <div><span style="color:var(--text-muted); font-size:12px;">Case 数量</span><div style="font-weight:500;">${count} 条</div></div>
+            `;
+        }
+
+        async function confirmStartRun() {
+            const runName = document.getElementById('config-run-name').value.trim();
+            if (!runName) {
+                alert('请填写任务名称');
+                document.getElementById('config-run-name').focus();
+                return;
+            }
+            const task = document.getElementById('config-task').value;
+            const persona = document.getElementById('config-persona').value;
+            const difficulty = document.getElementById('config-difficulty').value;
+            let count = parseInt(document.getElementById('config-count').value);
+            if (isNaN(count) || count < 1) count = 5;
+
+            currentTask = task;
+            showView('run');
+            const btn = document.querySelector('.btn-danger');
+            if (btn) btn.style.display = 'inline-flex';
+
+            try {
+                const params = new URLSearchParams({ task_id: task, scenarios: String(count), difficulty, persona_type: persona });
+                if (runName) params.append('run_name', runName);
+                const resp = await fetch(`/api/v1/run?${params.toString()}`, { method: 'POST' });
+                const data = await resp.json();
+                if (data.status === 'started') {
+                    if (runMonitorInterval) clearInterval(runMonitorInterval);
+                    runMonitorInterval = setInterval(loadRunStatus, 1000);
+                }
+            } catch (e) { alert('启动失败: ' + e.message); }
+        }
+
+        function stopRun() {
+            if (runMonitorInterval) {
+                clearInterval(runMonitorInterval);
+                runMonitorInterval = null;
+            }
+            showView('evals');
+            loadEvalsList();
+        }
+
+        async function loadRunStatus() {
+            try {
+                const resp = await fetch('/api/v1/run-status');
+                const data = await resp.json();
+
+                document.getElementById('run-progress').textContent = `${data.completed_cases}/${data.total_cases}`;
+                document.getElementById('run-progress-bar').style.width = `${data.progress_percent}%`;
+                document.getElementById('run-success-rate').textContent = data.success_rate.toFixed(0) + '%';
+                document.getElementById('run-success-rate').className = 'stat-value ' + (data.success_rate >= 60 ? 'green' : 'red');
+                document.getElementById('run-pass-fail').textContent = `${data.success_count} / ${data.completed_cases - data.success_count}`;
+                document.getElementById('run-current').textContent = data.current_case || '-';
+
+                // Persona distribution
+                const dist = data.persona_distribution || {};
+                const totalPersona = Object.values(dist).reduce((s, v) => s + v, 0);
+                const personaNames = { cooperative: 'Cooperative', rejection: 'Rejection', emotional: 'Emotional', off_topic: 'Off Topic', indecisive: 'Indecisive' };
+                const personaColors = { cooperative: 'var(--green)', rejection: 'var(--red)', emotional: 'var(--yellow)', off_topic: 'var(--orange)', indecisive: 'var(--blue)' };
+                const statBars = [
+                    { key: 'cooperative', name: 'Cooperative' },
+                    { key: 'rejection', name: 'Rejection' },
+                    { key: 'emotional', name: 'Emotional' },
+                    { key: 'off_topic', name: 'Off Topic' },
+                    { key: 'indecisive', name: 'Indecisive' },
+                ];
+                document.getElementById('run-stats').innerHTML = statBars.map(p => {
+                    const count = dist[p.key] || 0;
+                    const pct = totalPersona > 0 ? (count / totalPersona * 100) : 0;
+                    return `<div class="metric"><div class="metric-name">${p.name}</div><div class="metric-bar"><div class="metric-fill" style="width:${pct}%; background:${personaColors[p.key]}"></div></div><div class="metric-value">${count}</div></div>`;
+                }).join('');
+
+                // Logs
+                const logsEl = document.getElementById('run-logs');
+                logsEl.innerHTML = data.logs.slice(-20).map(log => {
+                    const time = new Date(log.timestamp * 1000).toLocaleTimeString();
+                    const level = log.level.toLowerCase();
+                    return `<div class="log-line"><span class="log-time">${time}</span><span class="log-${level}">[${log.level}] ${log.message}</span></div>`;
+                }).join('');
+                logsEl.scrollTop = logsEl.scrollHeight;
+
+                // Stats
+                if (data.status === 'completed') {
+                    clearInterval(runMonitorInterval);
+                    showView('evals');
+                    loadEvalsList();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Level 3: Eval Detail
+        function showEvalDetail(results) {
+            currentEvalResults = results;
+            showView('eval-detail');
+            document.getElementById('breadcrumbs').innerHTML = `
+                <a onclick="showView('home')">工作台</a><span class="breadcrumb-sep">/</span>
+                <a onclick="showView('evals')">评测记录</a><span class="breadcrumb-sep">/</span>
+                <span>评测详情</span>
+            `;
+
+            const total = results.length;
+            const passed = results.filter(r => r.passed).length;
+            const avgScore = total > 0 ? results.reduce((s, r) => s + (r.overall_score || 0), 0) / total : 0;
+            const successRate = total > 0 ? (passed / total * 100).toFixed(0) : 0;
+
+            document.getElementById('eval-title').textContent = `评测结果 - ${currentTask}`;
+            document.getElementById('eval-subtitle').textContent = `${total} 条 Case | ${new Date().toLocaleString()}`;
+            document.getElementById('eval-success-rate').textContent = successRate + '%';
+            document.getElementById('eval-success-rate').className = 'stat-value ' + (successRate >= 60 ? 'green' : 'red');
+            document.getElementById('eval-avg-score').textContent = avgScore.toFixed(1);
+            document.getElementById('eval-pass-fail').textContent = `${passed} / ${total - passed}`;
+            const runName = results[0]?.run_name || '';
+            document.getElementById('eval-run-name').textContent = runName ? `${runName}（${total} Case）` : `${total} Case`;
+            const totalSec = results.reduce((s, r) => s + (r.elapsed_seconds || 0), 0);
+            document.getElementById('eval-duration').textContent = totalSec > 0
+                ? (totalSec >= 60 ? `${Math.floor(totalSec / 60)}m ${Math.round(totalSec % 60)}s` : `${Math.round(totalSec)}s`)
+                : '-';
+
+            // Case table
+            document.querySelector('#eval-case-table tbody').innerHTML = results.map((r, i) => `
+                <tr onclick="showCaseDetailByIndex(${i})">
+                    <td>${i+1}</td>
+                    <td>${r.scenario_id}</td>
+                    <td>${r.persona_type}</td>
+                    <td>${r.difficulty}</td>
+                    <td>${r.overall_score?.toFixed(0) || 0}</td>
+                    <td><span class="badge ${r.passed ? 'badge-green' : 'badge-red'}">${r.passed ? '通过' : '失败'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function rerunEval() {
+            // Get task_id from current eval results
+            const taskId = currentEvalResults.length > 0 ? currentEvalResults[0].task_id : 'feimaotui_contract';
+            // Reset form and pre-fill task
+            document.getElementById('config-task').value = taskId;
+            document.getElementById('config-persona').value = 'all';
+            document.getElementById('config-difficulty').value = 'medium';
+            document.getElementById('config-count').value = '5';
+            document.getElementById('config-run-name').value = '';
+            startNewRun();
+            updateConfigPreview();
+        }
+
+        async function downloadEvalReport() {
+            try {
+                const taskId = currentEvalResults.length > 0 ? currentEvalResults[0].task_id : currentTask;
+                const resp = await fetch(`/api/v1/results/${taskId}/report`);
+                const data = await resp.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `eval_report_${taskId}_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert('下载失败: ' + e.message);
+            }
+        }
+
+        let currentCaseResult = null;
+
+        function showCaseDetailByIndex(index) {
+            const result = currentEvalResults[index];
+            if (!result) return;
+            showCaseDetail(result, index + 1);
+        }
+
+        // Level 4: Case Detail
+        function showCaseDetail(result, caseNumber) {
+            currentCaseResult = result;
+            if (!result) return;
+
+            showView('case-detail');
+            document.getElementById('breadcrumbs').innerHTML = `
+                <a onclick="showView('home')">工作台</a><span class="breadcrumb-sep">/</span>
+                <a onclick="showView('evals')">评测记录</a><span class="breadcrumb-sep">/</span>
+                <a onclick="backToEval()">评测详情</a><span class="breadcrumb-sep">/</span>
+                <span>Case #${caseNumber}</span>
+            `;
+
+            document.getElementById('case-id').textContent = `Case #${caseNumber}`;
+            document.getElementById('case-meta').textContent = `${result.scenario_id} | ${result.persona_type} | ${result.difficulty}`;
+            document.getElementById('case-status').textContent = result.passed ? '通过' : '失败';
+            document.getElementById('case-status').className = 'badge ' + (result.passed ? 'badge-green' : 'badge-red');
+
+            // === Persona Profile ===
+            const profile = result.persona_profile || {};
+            document.getElementById('case-persona').innerHTML = `
+                <div class="grid grid-2" style="gap: 12px;">
+                    <div><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Persona Type</div><div style="font-weight:600;">${profile.name || result.persona_type}</div></div>
+                    <div><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Difficulty</div><div>${result.difficulty}</div></div>
+                    <div><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Motivation</div><div>${profile.motivation || '-'}</div></div>
+                    <div><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Emotional Baseline</div><div>${profile.emotional_baseline || '-'}</div></div>
+                    <div style="grid-column: span 2;"><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Core Concerns</div><div>${(profile.concerns || []).join('、') || '-'}</div></div>
+                    <div style="grid-column: span 2;"><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Behavior Patterns</div><div>${(profile.behavior_patterns || []).join('、') || '-'}</div></div>
+                </div>
+            `;
+
+            // === Metrics Detail (thresholds aligned with backend pass logic) ===
+            const passThreshold = result.pass_threshold ? result.pass_threshold * 100 : 70;
+            const metrics = [
+                { key: 'overall_score', name: 'Overall Score', threshold: null, showBadge: false },
+                { key: 'task_success', name: 'Task Success', threshold: passThreshold, showBadge: true },
+                { key: 'flow_adherence', name: 'Flow Adherence', threshold: 60, showBadge: true },
+                { key: 'state_tracking', name: 'State Tracking', threshold: 70, showBadge: false },
+                { key: 'compliance', name: 'Compliance', threshold: 70, showBadge: true },
+                { key: 'recovery', name: 'Recovery Ability', threshold: 60, showBadge: false },
+                { key: 'naturalness', name: 'Naturalness', threshold: 60, showBadge: false },
+                { key: 'efficiency', name: 'Efficiency', threshold: 60, showBadge: false },
+            ];
+
+            // Gate metrics that determine passed
+            const gateMetrics = ['task_success', 'flow_adherence', 'compliance'];
+            const gatePassed = gateMetrics.every(k => {
+                const m = metrics.find(x => x.key === k);
+                return (result[k] || 0) >= (m ? m.threshold : 70);
+            });
+
+            let metricsHtml = metrics.map(m => {
+                const score = result[m.key] || 0;
+                const passed = m.threshold !== null ? score >= m.threshold : null;
+                const badge = m.showBadge
+                    ? `<span class="badge ${passed ? 'badge-green' : 'badge-red'}">${passed ? 'PASS' : 'FAIL'}</span>`
+                    : `<span style="color:var(--text-muted); font-size:11px;">参考</span>`;
+                const barColor = passed === null ? 'var(--text-muted)' : (passed ? 'var(--green)' : 'var(--red)');
+                const scoreColor = passed === null ? 'color:var(--text)' : (passed ? 'color:var(--green)' : 'color:var(--red)');
+                return `
+                    <div style="display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border-subtle);">
+                        <div style="width:120px; font-size:12px;">${m.name}${m.threshold !== null ? `<span style="color:var(--text-muted); font-size:10px;"> ≥${m.threshold}</span>` : ''}</div>
+                        <div class="metric-bar" style="flex:1;"><div class="metric-fill" style="width:${Math.min(score, 100)}%; background:${barColor}"></div></div>
+                        <div style="width:36px; text-align:right; font-size:12px; font-weight:600; ${scoreColor}">${score.toFixed(0)}</div>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+
+            metricsHtml += `
+                <div style="margin-top:10px; padding:8px 10px; background:var(--bg-hover); border-radius:6px; font-size:11px; color:var(--text-secondary); line-height:1.6;">
+                    <strong style="color:var(--text);">通过判定规则：</strong>Task Success ≥ ${passThreshold.toFixed(0)} 且 Flow Adherence ≥ 60 且 Compliance ≥ 70 必须同时满足。
+                    Overall Score 为加权总分，<span style="color:var(--yellow);">不直接决定通过与否</span>。
+                </div>
+            `;
+
+            document.getElementById('case-metrics-detail').innerHTML = metricsHtml;
+
+            // === Analysis Module ===
+            if (!result.passed) {
+                document.getElementById('case-analysis-card').style.display = 'block';
+                const reasons = result.failure_reasons || [];
+                const suggestions = result.improvement_suggestions || [];
+                const detail = result.flow_adherence_detail || {};
+                document.getElementById('case-analysis').innerHTML = `
+                    <div style="margin-bottom:16px;">
+                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Failure Reason</div>
+                        ${reasons.length > 0 ? reasons.map(r => `<div style="padding:6px 0; color:var(--red); font-size:13px;">• ${r}</div>`).join('') : '<div style="color:var(--text-muted); font-size:13px;">未记录失败原因</div>'}
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Root Cause</div>
+                        <div style="font-size:13px; color:var(--text-secondary);">
+                            ${detail.skipped_steps ? `遗漏步骤: ${detail.skipped_steps.join('、')}` : (detail.deviated_steps ? `偏离步骤: ${detail.deviated_steps.join('、')}` : '需进一步分析对话记录定位根因')}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Improvement Suggestions</div>
+                        ${suggestions.length > 0 ? suggestions.map(s => `<div style="padding:6px 0; font-size:13px;">• ${s}</div>`).join('') : '<div style="color:var(--text-muted); font-size:13px;">无改进建议</div>'}
+                    </div>
+                `;
+            } else {
+                document.getElementById('case-analysis-card').style.display = 'none';
+            }
+
+            // === Memory Snapshot ===
+            const mem = result.conversation_memory || {};
+            document.getElementById('case-memory').innerHTML = `
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">话题记录</div>
+                    <div>${(mem.mentioned_topics || []).join('、') || '-'}</div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">表达顾虑</div>
+                    <div>${(mem.expressed_concerns || []).join('、') || '-'}</div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">情绪水平</div>
+                    <div>${mem.emotion_level !== undefined ? mem.emotion_level.toFixed(1) : '-'}</div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">承诺度</div>
+                    <div>${mem.commitment_score !== undefined ? mem.commitment_score.toFixed(1) : '-'}</div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">用户承诺</div>
+                    <div>${(mem.user_commitments || []).join('、') || '-'}</div>
+                </div>
+            `;
+
+            // === State Transition Timeline ===
+            const transitions = result.state_transitions || [];
+            if (transitions.length > 0) {
+                const stateColors = { hard_reject: 'var(--red)', soft_reject: 'var(--orange)', considering: 'var(--yellow)', interested: 'var(--blue)', committed: 'var(--green)' };
+                document.getElementById('case-state-timeline').innerHTML = transitions.map((t, i) => `
+                    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; ${i < transitions.length - 1 ? 'border-bottom:1px solid var(--border-subtle);' : ''}">
+                        <div style="width:8px; height:8px; border-radius:50%; background:${stateColors[t.to_state] || 'var(--text-muted)'}; flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div style="font-size:12px; font-weight:500;">${t.from_state} → ${t.to_state}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Turn ${t.turn}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('case-state-timeline').innerHTML = '<div style="color:var(--text-muted); font-size:13px;">无状态转换记录</div>';
+            }
+
+            // === Triggered Events ===
+            const events = result.triggered_events || [];
+            if (events.length > 0) {
+                document.getElementById('case-events').innerHTML = events.map(e => `
+                    <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle);">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="badge badge-orange">${e.event_type}</span>
+                            <span style="font-size:11px; color:var(--text-muted);">Turn ${e.turn}</span>
+                        </div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">${e.response || ''}</div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('case-events').innerHTML = '<div style="color:var(--text-muted); font-size:13px;">未触发事件</div>';
+            }
+
+            // === Dialogue ===
+            const dialogue = result.dialogue_history || [];
+            document.getElementById('case-dialogue').innerHTML = dialogue.map(turn => `
+                <div class="chat-message">
+                    <div class="chat-avatar ${turn.role}">${turn.role === 'agent' ? 'A' : 'U'}</div>
+                    <div class="chat-content ${turn.role}">${turn.content}</div>
+                </div>
+            `).join('');
+        }
+
+        function backToEval() {
+            if (!currentEvalResults || currentEvalResults.length === 0) {
+                showView('evals');
+                return;
+            }
+            showView('eval-detail');
+            document.getElementById('breadcrumbs').innerHTML = `
+                <a onclick="showView('home')">工作台</a><span class="breadcrumb-sep">/</span>
+                <a onclick="showView('evals')">评测记录</a><span class="breadcrumb-sep">/</span>
+                <span>评测详情</span>
+            `;
+        }
+
+        // Level 2+ views
+        async function loadEvalsList() {
+            try {
+                const resp = await fetch('/api/v1/results?task_id=' + currentTask);
+                const data = await resp.json();
+                allResults = data.results || [];
+
+                const tbody = document.querySelector('#evals-table tbody');
+                if (allResults.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无评测记录</td></tr>';
+                    return;
+                }
+
+                // Group by run_id
+                const runs = {};
+                allResults.forEach(r => {
+                    const rid = r.run_id || 'unknown';
+                    if (!runs[rid]) {
+                        runs[rid] = {
+                            run_id: rid,
+                            run_name: r.run_name || rid,
+                            task_id: r.task_id,
+                            timestamp: r.timestamp,
+                            results: [],
+                        };
+                    }
+                    runs[rid].results.push(r);
+                });
+
+                const runList = Object.values(runs).sort((a, b) => b.timestamp - a.timestamp);
+
+                tbody.innerHTML = runList.map(run => {
+                    const total = run.results.length;
+                    const passed = run.results.filter(r => r.passed).length;
+                    const failed = total - passed;
+                    const rate = total > 0 ? (passed / total * 100).toFixed(0) : 0;
+                    const time = new Date(run.timestamp * 1000).toLocaleString();
+                    return `
+                        <tr onclick="showEvalDetailByRun('${run.run_id}')">
+                            <td><strong>${run.run_name}</strong></td>
+                            <td>${time}</td>
+                            <td>${total}</td>
+                            <td><span class="badge badge-green">${passed}</span></td>
+                            <td><span class="badge badge-red">${failed}</span></td>
+                            <td><strong>${rate}%</strong></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        function showEvalDetailByRun(runId) {
+            const runResults = allResults.filter(r => r.run_id === runId);
+            if (runResults.length === 0) return;
+            currentEvalResults = runResults;
+            showEvalDetail(runResults);
+        }
+
+        async function loadBenchmarks() {
+            document.querySelector('#benchmarks-table tbody').innerHTML = `
+                <tr><td>飞毛腿合同评测</td><td>骑手合同签署通知场景</td><td>10</td><td>2026-05-31</td></tr>
+                <tr><td>直播升级告知</td><td>课程发布页面升级</td><td>8</td><td>2026-05-31</td></tr>
+            `;
+        }
+
+        async function loadDatasets() {
+            document.querySelector('#datasets-table tbody').innerHTML = `
+                <tr><td>飞毛腿任务定义</td><td>Task Config</td><td>2</td><td>2026-05-31</td></tr>
+                <tr><td>Gold 对话库</td><td>Conversation</td><td>4</td><td>2026-05-31</td></tr>
+                <tr><td>用户画像模板</td><td>Persona</td><td>5</td><td>2026-05-31</td></tr>
+            `;
+        }
+
+        async function loadPersonaAnalysis() {
+            try {
+                const resp = await fetch('/api/v1/stats/persona_metrics?task_id=' + currentTask);
+                const data = await resp.json();
+                const metrics = data.persona_metrics || [];
+
+                if (metrics.length === 0) {
+                    document.getElementById('persona-content').innerHTML = '<div class="empty"><p>暂无评测数据</p></div>';
+                    return;
+                }
+
+                const personaNames = {
+                    cooperative: '积极配合型', indecisive: '犹豫不决型',
+                    rejection: '轻度拒绝型', emotional: '情绪化型', off_topic: '跑题型'
+                };
+
+                document.getElementById('persona-content').innerHTML = metrics.map(m => {
+                    const rate = m.success_rate || 0;
+                    const avgScore = m.avg_score || 0;
+                    const ci = m.ci_95_lower !== undefined ? `95% CI: [${m.ci_95_lower.toFixed(0)}%, ${m.ci_95_upper.toFixed(0)}%]` : '';
+                    return `
+                        <div style="padding:16px; background:var(--bg); border-radius:8px; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                                <div style="font-weight:600; font-size:14px;">${personaNames[m.persona_type] || m.persona_type}</div>
+                                <span class="badge ${rate >= 60 ? 'badge-green' : 'badge-red'}">${m.passed_cases}/${m.total_cases} 通过</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                                <div style="width:80px; font-size:12px; color:var(--text-muted);">成功率</div>
+                                <div style="flex:1;"><div class="progress-bar"><div class="progress-fill ${rate >= 60 ? 'green' : 'red'}" style="width:${rate}%"></div></div></div>
+                                <div style="width:80px; text-align:right; font-weight:600;">${rate.toFixed(0)}%</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                                <div style="width:80px; font-size:12px; color:var(--text-muted);">平均得分</div>
+                                <div style="flex:1;"><div class="progress-bar"><div class="progress-fill blue" style="width:${avgScore}%"></div></div></div>
+                                <div style="width:80px; text-align:right; font-weight:600;">${avgScore.toFixed(0)}</div>
+                            </div>
+                            ${ci ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${ci}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                // Summary section
+                if (data.weakest_persona || data.improvement_priority) {
+                    document.getElementById('persona-content').innerHTML += `
+                        <div style="padding:12px; background:var(--bg-hover); border-radius:6px; margin-top:8px;">
+                            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">改进建议</div>
+                            ${(data.improvement_priority || []).map(p => `<div style="font-size:13px; color:var(--text-secondary); padding:4px 0;">• ${p}</div>`).join('')}
+                        </div>
+                    `;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadFailureAnalysis() {
+            try {
+                const resp = await fetch('/api/v1/analyze/failures?task_id=' + currentTask, { method: 'POST' });
+                const data = await resp.json();
+
+                if (data.total_failures === 0) {
+                    document.getElementById('failures-content').innerHTML = '<div class="empty"><p>🎉 全部通过，无失败分析</p></div>';
+                    return;
+                }
+
+                const distribution = data.failure_distribution || {};
+                const sorted = Object.entries(distribution).sort((a, b) => b[1] - a[1]);
+                const max = sorted[0]?.[1] || 1;
+
+                const failureTypeNames = {
+                    flow_deviation: '流程偏离',
+                    constraint_violation: '约束违规',
+                    intent_misunderstanding: '意图误解',
+                    recovery_failure: '恢复失败',
+                    early_termination: '过早终止',
+                    faq_mismatch: 'FAQ不匹配',
+                };
+
+                document.getElementById('failures-content').innerHTML = `
+                    <div style="margin-bottom:16px;">
+                        <div style="font-size:14px; font-weight:600; margin-bottom:8px;">失败类型分布（${data.total_failures} 个失败 Case）</div>
+                    </div>
+                    ${sorted.map(([ftype, count], i) => `
+                        <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+                            <span style="width:24px; font-weight:600; color:var(--text-muted);">${i+1}</span>
+                            <span style="flex:1; font-size:13px;">${failureTypeNames[ftype] || ftype}</span>
+                            <div class="progress-bar" style="width:120px;"><div class="progress-fill red" style="width:${(count/max*100)}%"></div></div>
+                            <span style="font-size:12px; color:var(--text-muted); width:50px; text-align:right;">${count}次</span>
+                            <span style="font-size:12px; color:var(--text-muted);">${(count/data.total_failures*100).toFixed(0)}%</span>
+                        </div>
+                    `).join('')}
+                    <div style="margin-top:16px; padding:12px; background:var(--bg); border-radius:6px;">
+                        <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">
+                            <strong>最常见失败类型:</strong> ${failureTypeNames[data.most_common_failure] || data.most_common_failure || 'N/A'}<br>
+                            <strong>影响占比:</strong> ${sorted[0] ? (sorted[0][1]/data.total_failures*100).toFixed(0) : 0}% 的失败案例
+                        </div>
+                    </div>
+                `;
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadDifficultyAnalysis() {
+            try {
+                const resp = await fetch('/api/v1/stats/difficulty?task_id=' + currentTask);
+                const data = await resp.json();
+                const metrics = data.difficulty_metrics || [];
+
+                if (metrics.length === 0) {
+                    document.getElementById('difficulty-content').innerHTML = '<div class="empty"><p>暂无评测数据</p></div>';
+                    return;
+                }
+
+                const diffNames = { easy: '简单', medium: '中等', hard: '困难' };
+                const diffColors = { easy: 'var(--green)', medium: 'var(--yellow)', hard: 'var(--red)' };
+
+                document.getElementById('difficulty-content').innerHTML = `
+                    <div class="grid grid-3" style="gap:16px; margin-bottom:20px;">
+                        ${metrics.map(m => `
+                            <div style="padding:16px; background:var(--bg); border-radius:8px; border-left:4px solid ${diffColors[m.difficulty] || 'var(--text-muted)'};">
+                                <div style="font-weight:600; font-size:14px; margin-bottom:12px;">${diffNames[m.difficulty] || m.difficulty}</div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                    <span style="font-size:12px; color:var(--text-muted); width:60px;">成功率</span>
+                                    <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:${m.success_rate}%; background:${diffColors[m.difficulty]}"></div></div>
+                                    <span style="font-weight:600;">${m.success_rate.toFixed(0)}%</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                    <span style="font-size:12px; color:var(--text-muted); width:60px;">平均分</span>
+                                    <span style="font-weight:600;">${m.avg_score.toFixed(0)}</span>
+                                </div>
+                                <div style="font-size:11px; color:var(--text-muted);">
+                                    ${m.passed_cases}/${m.total_cases} 通过 · 95% CI: [${m.ci_95_lower.toFixed(0)}%, ${m.ci_95_upper.toFixed(0)}%]
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="padding:12px; background:var(--bg-hover); border-radius:6px;">
+                        <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">难度曲线</div>
+                        <div style="display:flex; align-items:flex-end; gap:20px; height:60px;">
+                            ${['easy', 'medium', 'hard'].map(d => {
+                                const m = metrics.find(x => x.difficulty === d);
+                                const rate = m ? m.success_rate : 0;
+                                return `
+                                    <div style="flex:1; text-align:center;">
+                                        <div style="height:${rate * 0.5}px; background:${diffColors[d]}; border-radius:4px 4px 0 0; margin-bottom:4px;"></div>
+                                        <div style="font-size:11px;">${diffNames[d]}</div>
+                                        <div style="font-size:12px; font-weight:600;">${rate.toFixed(0)}%</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadHeatmap() {
+            try {
+                const resp = await fetch('/api/v1/stats/heatmap?type=persona');
+                const data = await resp.json();
+                const cells = data.cells || [];
+
+                if (cells.length === 0) {
+                    document.getElementById('heatmap-content').innerHTML = '<div class="empty"><p>暂无评测数据</p></div>';
+                    return;
+                }
+
+                const xLabels = data.x_labels || [];
+                const yLabels = data.y_labels || [];
+                const metricNames = { task_success: '任务成功', flow_adherence: '流程遵循', compliance: '合规性', recovery: '恢复能力', naturalness: '自然度' };
+
+                document.getElementById('heatmap-content').innerHTML = `
+                    <div style="margin-bottom:16px; font-size:14px; font-weight:600;">${data.title || '失败热力图'}</div>
+                    <div style="display:flex; gap:12px;">
+                        <div style="width:100px; display:flex; flex-direction:column; gap:2px; padding-top:24px;">
+                            ${yLabels.map(y => `<div style="height:32px; display:flex; align-items:center; font-size:11px; color:var(--text-muted);">${metricNames[y] || y}</div>`).join('')}
+                        </div>
+                        <div style="flex:1; overflow-x:auto;">
+                            <div style="display:flex; gap:2px; margin-bottom:4px;">
+                                ${xLabels.map(x => `<div style="width:60px; text-align:center; font-size:11px; color:var(--text-muted);">${x.substring(0, 8)}</div>`).join('')}
+                            </div>
+                            ${yLabels.map((y, yi) => `
+                                <div style="display:flex; gap:2px; margin-bottom:2px;">
+                                    ${xLabels.map((x, xi) => {
+                                        const cell = cells.find(c => c.x === xi && c.y === yi);
+                                        return `<div style="width:60px; height:32px; background:${cell?.color || '#333'}; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff;" title="${cell?.tooltip || ''}">${cell?.value?.toFixed(0) || 0}%</div>`;
+                                    }).join('')}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-muted);">
+                        <span>失败率:</span>
+                        <div style="width:16px; height:16px; background:#4CAF50; border-radius:2px;"></div><span>低</span>
+                        <div style="width:16px; height:16px; background:#FFC107; border-radius:2px;"></div><span>中</span>
+                        <div style="width:16px; height:16px; background:#F44336; border-radius:2px;"></div><span>高</span>
+                    </div>
+                `;
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadTrajectories() {
+            try {
+                const resp = await fetch('/api/v1/stats/trajectories');
+                const data = await resp.json();
+                const patterns = data.top_success_patterns || [];
+
+                if (patterns.length === 0) {
+                    document.getElementById('trajectories-content').innerHTML = '<div class="empty"><p>暂无成功案例数据</p></div>';
+                    return;
+                }
+
+                document.getElementById('trajectories-content').innerHTML = `
+                    <div style="margin-bottom:16px; font-size:13px; color:var(--text-secondary);">
+                        共 ${data.total_successful_cases || 0} 个成功案例，识别出 ${data.unique_trajectories || 0} 种不同路径
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:14px; font-weight:600; margin-bottom:12px;">高频成功路径</div>
+                        ${patterns.map((p, i) => `
+                            <div style="padding:12px; background:var(--bg); border-radius:8px; margin-bottom:12px; border-left:3px solid var(--green);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <span style="font-weight:600;">${p.pattern_name}</span>
+                                    <span class="badge badge-green">${(p.occurrence_rate * 100).toFixed(0)}% 出现</span>
+                                </div>
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">${p.description}</div>
+                                <div style="font-size:11px; color:var(--text-muted);">
+                                    出现 ${p.occurrence_count} 次 · 平均得分 ${p.avg_score.toFixed(0)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${(data.failure_patterns || []).length > 0 ? `
+                        <div>
+                            <div style="font-size:14px; font-weight:600; margin-bottom:12px;">常见失败路径</div>
+                            ${data.failure_patterns.map(p => `
+                                <div style="padding:12px; background:var(--bg); border-radius:8px; margin-bottom:12px; border-left:3px solid var(--red);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                        <span style="font-weight:600;">${p.pattern_name}</span>
+                                        <span class="badge badge-red">${(p.occurrence_rate * 100).toFixed(0)}% 出现</span>
+                                    </div>
+                                    <div style="font-size:11px; color:var(--text-muted);">
+                                        出现 ${p.occurrence_count} 次 · 平均得分 ${p.avg_score.toFixed(0)}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+            } catch (e) { console.error(e); }
+        }
+
+        // Theme toggle
+        let currentTheme = localStorage.getItem('theme') || 'system';
+        const THEME_ICONS = { system: '◐', light: '☀', dark: '☾' };
+
+        function applyTheme() {
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const actualTheme = currentTheme === 'system' ? (systemDark ? 'dark' : 'light') : currentTheme;
+            document.documentElement.setAttribute('data-theme', actualTheme);
+            document.getElementById('theme-toggle').textContent = THEME_ICONS[currentTheme] || '◐';
+        }
+
+        function toggleTheme() {
+            const modes = ['system', 'light', 'dark'];
+            const idx = modes.indexOf(currentTheme);
+            currentTheme = modes[(idx + 1) % modes.length];
+            localStorage.setItem('theme', currentTheme);
+            applyTheme();
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+        function showSettings() {
+            showView('settings');
+            loadSettings();
+        }
+
+        async function loadSettings() {
+            try {
+                const resp = await fetch('/api/v1/settings');
+                const s = await resp.json();
+                document.getElementById('settings-api-key').placeholder = s.openai_api_key ? '已配置 (留空不修改)' : '未配置';
+                document.getElementById('settings-base-url').value = s.base_url || '';
+                document.getElementById('settings-llm-model').value = s.llm_model || '';
+                document.getElementById('settings-judge-model').value = s.judge_llm_model || '';
+                document.getElementById('settings-max-turns').value = s.max_turns_per_call || '';
+                document.getElementById('settings-target-turns').value = s.target_turns || '';
+                document.getElementById('settings-target-cost').value = s.target_cost_per_success || '';
+                document.getElementById('settings-token-price').value = s.token_price_per_1k || '';
+                document.getElementById('settings-host').value = s.dashboard_host || '';
+                document.getElementById('settings-port').value = s.dashboard_port || '';
+                document.getElementById('settings-log-level').value = s.log_level || 'INFO';
+            } catch (e) { console.error(e); }
+        }
+
+        async function saveSettings() {
+            const payload = {
+                openai_api_key: document.getElementById('settings-api-key').value,
+                base_url: document.getElementById('settings-base-url').value,
+                llm_model: document.getElementById('settings-llm-model').value,
+                judge_llm_model: document.getElementById('settings-judge-model').value,
+                max_turns_per_call: parseInt(document.getElementById('settings-max-turns').value),
+                target_turns: parseFloat(document.getElementById('settings-target-turns').value),
+                target_cost_per_success: parseFloat(document.getElementById('settings-target-cost').value),
+                token_price_per_1k: parseFloat(document.getElementById('settings-token-price').value),
+                dashboard_host: document.getElementById('settings-host').value,
+                dashboard_port: parseInt(document.getElementById('settings-port').value),
+                log_level: document.getElementById('settings-log-level').value,
+            };
+            try {
+                const resp = await fetch('/api/v1/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                const msg = document.getElementById('settings-msg');
+                if (data.status === 'saved') {
+                    msg.textContent = '保存成功';
+                    msg.style.color = 'var(--green)';
+                    setTimeout(() => msg.textContent = '', 3000);
+                } else {
+                    msg.textContent = '保存失败';
+                    msg.style.color = 'var(--red)';
+                }
+            } catch (e) {
+                const msg = document.getElementById('settings-msg');
+                msg.textContent = '保存失败: ' + e.message;
+                msg.style.color = 'var(--red)';
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme();
+            loadHomeData();
+        });
+    </script>
+</body>
+</html>

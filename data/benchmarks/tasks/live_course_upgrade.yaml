@@ -1,0 +1,63 @@
+task_id: "live_course_upgrade"
+name: "课程发布直播升级告知"
+description: |
+  告知机构客户，课程发布页面将新增"标准直播"和"低延迟直播"两个独立选项。
+skill_name: "live_course"
+difficulty: "medium"
+
+variables:
+  institution_name: "机构名称"
+
+success_criteria:
+  - condition_id: "identity_confirmed"
+    name: "身份确认"
+    description: "确认对方是机构负责人"
+    check_type: "rule"
+    check_config:
+      agent_keywords: ["负责人", "校长"]
+      user_confirm_patterns: ["是", "对", "没错"]
+    weight: 1.0
+
+  - condition_id: "upgrade_announced"
+    name: "升级内容传达"
+    description: "告知新增了低延迟直播选项"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["低延迟", "直播", "新增", "升级"]
+    weight: 1.2
+
+  - condition_id: "option_difference"
+    name: "选项差异说明"
+    description: "说明标准直播和低延迟直播的区别"
+    check_type: "hybrid"
+    check_config:
+      standard_keywords: ["标准", "5秒", "大班"]
+      low_latency_keywords: ["低延迟", "1-2秒", "小班", "实操"]
+    weight: 1.0
+
+  - condition_id: "price_info"
+    name: "价格说明"
+    description: "说明低延迟直播费用略高"
+    check_type: "rule"
+    check_config:
+      price_keywords: ["费用", "价格", "贵"]
+      low_latency_mentioned: true
+    weight: 0.8
+
+  - condition_id: "next_steps"
+    name: "后续步骤说明"
+    description: "说明如何使用或配置新功能"
+    check_type: "rule"
+    check_config:
+      next_step_keywords: ["明天", "查看", "配置", "Web"]
+    weight: 0.6
+
+pass_threshold: 0.7
+
+expected_outcome:
+  task_completed: true
+  customer_awareness: "informed"
+
+injected_events:
+  - "off_topic_001"  # 跑题
+  - "price_concern_001"  # 价格担忧

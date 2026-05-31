@@ -1,0 +1,50 @@
+events:
+  - event_id: "rejection_001"
+    type: "rejection"
+    trigger: "turn_based"
+    inject_at_turn: 3
+    payload:
+      rejection_text: "最近太累了，不想送了。"
+      expected_agent_action: "retention_attempt"
+    weight: 0.8
+
+  - event_id: "emotional_001"
+    type: "emotional"
+    trigger: "turn_based"
+    inject_at_turn: 4
+    payload:
+      emotional_intensity: "high"
+      emotional_text: "你们这个平台太黑了！上次跑了一天就给了我50块！"
+      expected_agent_action: "emotional_deescalation"
+    weight: 0.5
+
+  - event_id: "interruption_001"
+    type: "interruption"
+    trigger: "intent_based"
+    trigger_keywords:
+      - "请记住"
+      - "每天至少"
+    payload:
+      interruption_text: "等等，你先把话说完。"
+      expected_agent_action: "pause_and_wait"
+    weight: 0.6
+
+  - event_id: "off_topic_001"
+    type: "off_topic"
+    trigger: "intent_based"
+    trigger_keywords:
+      - "确认"
+      - "明白"
+    payload:
+      off_topic_text: "对了，你们那边天气怎么样？"
+      expected_agent_action: "acknowledge_and_redirect"
+    weight: 0.4
+
+  - event_id: "info_change_001"
+    type: "info_change"
+    trigger: "turn_based"
+    inject_at_turn: 5
+    payload:
+      change_text: "等等，我之前说的名字不对，我是张三不是李四。"
+      expected_agent_action: "update_and_confirm"
+    weight: 0.3

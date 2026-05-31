@@ -1,0 +1,94 @@
+conversation_id: "feimaotui_emotional_001"
+task_id: "feimaotui_contract"
+persona_type: "emotional"
+scenario: "骑手情绪激动，需要安抚"
+quality_level: "good"
+
+turns:
+  - turn_number: 1
+    speaker: "agent"
+    content: "你好，请问是张明吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单。"
+    annotations:
+      key_moment: true
+
+  - turn_number: 2
+    speaker: "user"
+    content: "是。"
+    annotations:
+      identity_confirmed: true
+      tone: "cold"
+
+  - turn_number: 3
+    speaker: "agent"
+    content: "好的张明。你的合同今天已生效，你今天可以开始配送吗？"
+    annotations:
+      next_step: "confirm_commitment"
+
+  - turn_number: 4
+    speaker: "user"
+    content: "你们这个平台太黑了！我不做了，谁爱送谁送！"
+    annotations:
+      emotional_outburst: true
+      trigger_word: "太黑了"
+
+  - turn_number: 5
+    speaker: "agent"
+    content: "张明，我听到你很生气。发生了什么事？"
+    annotations:
+      deescalation: true
+      strategy: "acknowledge_emotion"
+
+  - turn_number: 6
+    speaker: "user"
+    content: "上次跑了一天就给了我50块，还扣了我30块说是保险。我现在想起来就火大！"
+    annotations:
+      complaint_content: true
+
+  - turn_number: 7
+    speaker: "agent"
+    content: "原来是这样，扣钱的事我帮你查查。关于飞毛腿，你先别急着退出，做几天看看收入情况，不行再决定。"
+    annotations:
+      solution_offered: true
+      compromise: true
+
+  - turn_number: 8
+    speaker: "user"
+    content: "行吧，那我先试试。"
+    annotations:
+      commitment_obtained: true
+      softened: true
+
+  - turn_number: 9
+    speaker: "agent"
+    content: "好的，有问题随时找我，注意安全。"
+    annotations:
+      safety_reminder: true
+      conversation_end: true
+
+annotations:
+  key_moments:
+    - turn: 4
+      type: "emotional_outburst"
+      note: "用户情绪爆发"
+    - turn: 5
+      type: "deescalation"
+      note: "Agent 采用倾听+确认情绪策略"
+    - turn: 7
+      type: "solution_offered"
+      note: "Agent 提出具体解决方案"
+
+  strategy_markers:
+    - turn: 5
+      marker: "EMPATHY"
+      note: "先承认情绪，不急于辩解"
+    - turn: 7
+      marker: "SOLUTION_FOCUS"
+      note: "提供具体行动建议"
+
+tags:
+  - "emotional_handling"
+  - "deescalation"
+  - "complaint_handling"
+
+created_at: "2026-05-31T00:00:00"
+source: "expert"

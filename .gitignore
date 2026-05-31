@@ -1,0 +1,29 @@
+# 敏感信息
+.env
+
+# 评测结果数据（含对话记录）
+data/results/
+
+# 数据库文件
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Comate specs
+.comate/
+
+# OS
+Thumbs.db

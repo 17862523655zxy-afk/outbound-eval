@@ -1,0 +1,74 @@
+task_id: "feimaotui_contract"
+name: "飞毛腿骑手合同签署通知"
+description: |
+  致电飞毛腿骑手，通知他们今天合同已成功签署，并提醒他们完成配送任务。
+skill_name: "feimaotui"
+difficulty: "medium"
+
+variables:
+  rider_name: "骑手姓名"
+  contract_type: "single"  # single: 单日合同, multi: 多日合同
+  daily_target: 20
+  multi_day_target: 15
+
+success_criteria:
+  - condition_id: "identity_confirmed"
+    name: "身份确认"
+    description: "确认对方是目标骑手"
+    check_type: "rule"
+    check_config:
+      agent_keywords: ["请问你是", "是骑手"]
+      user_confirm_patterns: ["是", "对", "没错", "是我"]
+    weight: 1.0
+
+  - condition_id: "contract_effective"
+    name: "合同生效告知"
+    description: "告知骑手合同今天已生效"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["合同", "生效", "今天"]
+    weight: 1.0
+
+  - condition_id: "delivery_commitment"
+    name: "配送承诺获取"
+    description: "获取骑手是否愿意开始配送的明确回复"
+    check_type: "hybrid"
+    check_config:
+      confirm_patterns: ["可以", "好的", "没问题", "愿意", "开始", "上线"]
+      reject_patterns: ["不送了", "不做了", "退出", "不想"]
+    weight: 1.5
+
+  - condition_id: "safety_reminder"
+    name: "安全提醒"
+    description: "提醒骑手注意安全"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["安全"]
+    weight: 0.8
+
+  - condition_id: "ranking_info"
+    name: "排名规则说明"
+    description: "说明飞毛腿排名规则（减少拒单取消）"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["排名", "拒单", "取消"]
+    weight: 0.5
+
+  - condition_id: "terms_explained"
+    name: "合同条款说明"
+    description: "说明每日单数要求"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["单", "每天", "至少"]
+      min_hits: 2
+    weight: 0.8
+
+pass_threshold: 0.5
+
+expected_outcome:
+  task_completed: true
+  user_commitment: "confirm"  # confirm, reject, inconclusive
+
+injected_events:
+  - "rejection_001"  # 轻度拒绝
+  - "emotional_001"  # 情绪爆发
