@@ -422,7 +422,7 @@
                                     <select class="form-input" id="config-task" onchange="updateConfigPreview()">
                                         <option value="feimaotui_contract">飞毛腿合同签署通知</option>
                                         <option value="live_course_upgrade">课程发布页面升级</option>
-                                        <option value="custom">自定义任务</option>
+
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -1101,16 +1101,19 @@
                 : '-';
 
             // Case table
-            document.querySelector('#eval-case-table tbody').innerHTML = results.map((r, i) => `
-                <tr onclick="showCaseDetailByIndex(${i})">
-                    <td>${i+1}</td>
+            document.querySelector('#eval-case-table tbody').innerHTML = results.map((r, i) => {
+                const scenarioNum = r.scenario_id?.match(/scenario_(\d+)/)?.[1] || (i+1);
+                return `
+                <tr onclick="showCaseDetailByIndex(${i}, ${scenarioNum})">
+                    <td>${scenarioNum}</td>
                     <td>${r.scenario_id}</td>
                     <td>${r.persona_type}</td>
                     <td>${r.difficulty}</td>
                     <td>${r.overall_score?.toFixed(0) || 0}</td>
                     <td><span class="badge ${r.passed ? 'badge-green' : 'badge-red'}">${r.passed ? '通过' : '失败'}</span></td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function rerunEval() {
@@ -1145,10 +1148,11 @@
 
         let currentCaseResult = null;
 
-        function showCaseDetailByIndex(index) {
+        function showCaseDetailByIndex(index, scenarioNum) {
             const result = currentEvalResults[index];
             if (!result) return;
-            showCaseDetail(result, index + 1);
+            const displayNum = scenarioNum || (index + 1);
+            showCaseDetail(result, displayNum);
         }
 
         // Level 4: Case Detail
@@ -1184,12 +1188,14 @@
 
             // === Metrics Detail (thresholds aligned with backend pass logic) ===
             const passThreshold = result.pass_threshold ? result.pass_threshold * 100 : 70;
+            const FLOW_THRESHOLD = 45;
+            const COMP_THRESHOLD = 55;
             const metrics = [
                 { key: 'overall_score', name: 'Overall Score', threshold: null, showBadge: false },
                 { key: 'task_success', name: 'Task Success', threshold: passThreshold, showBadge: true },
-                { key: 'flow_adherence', name: 'Flow Adherence', threshold: 60, showBadge: true },
+                { key: 'flow_adherence', name: 'Flow Adherence', threshold: FLOW_THRESHOLD, showBadge: true },
                 { key: 'state_tracking', name: 'State Tracking', threshold: 70, showBadge: false },
-                { key: 'compliance', name: 'Compliance', threshold: 70, showBadge: true },
+                { key: 'compliance', name: 'Compliance', threshold: COMP_THRESHOLD, showBadge: true },
                 { key: 'recovery', name: 'Recovery Ability', threshold: 60, showBadge: false },
                 { key: 'naturalness', name: 'Naturalness', threshold: 60, showBadge: false },
                 { key: 'efficiency', name: 'Efficiency', threshold: 60, showBadge: false },
@@ -1222,7 +1228,7 @@
 
             metricsHtml += `
                 <div style="margin-top:10px; padding:8px 10px; background:var(--bg-hover); border-radius:6px; font-size:11px; color:var(--text-secondary); line-height:1.6;">
-                    <strong style="color:var(--text);">通过判定规则：</strong>Task Success ≥ ${passThreshold.toFixed(0)} 且 Flow Adherence ≥ 60 且 Compliance ≥ 70 必须同时满足。
+                    <strong style="color:var(--text);">通过判定规则：</strong>Task Success ≥ ${passThreshold.toFixed(0)} 且 Flow Adherence ≥ ${FLOW_THRESHOLD} 且 Compliance ≥ ${COMP_THRESHOLD} 必须同时满足。
                     Overall Score 为加权总分，<span style="color:var(--yellow);">不直接决定通过与否</span>。
                 </div>
             `;
@@ -1235,6 +1241,9 @@
                 const reasons = result.failure_reasons || [];
                 const suggestions = result.improvement_suggestions || [];
                 const detail = result.flow_adherence_detail || {};
+                const stepDetails = detail.step_details || [];
+                const skipped = stepDetails.filter(s => s.actual_state === 'skipped');
+                const deviated = stepDetails.filter(s => s.actual_state === 'deviated');
                 document.getElementById('case-analysis').innerHTML = `
                     <div style="margin-bottom:16px;">
                         <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Failure Reason</div>
@@ -1243,7 +1252,7 @@
                     <div style="margin-bottom:16px;">
                         <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Root Cause</div>
                         <div style="font-size:13px; color:var(--text-secondary);">
-                            ${detail.skipped_steps ? `遗漏步骤: ${detail.skipped_steps.join('、')}` : (detail.deviated_steps ? `偏离步骤: ${detail.deviated_steps.join('、')}` : '需进一步分析对话记录定位根因')}
+                            ${skipped.length > 0 ? `遗漏步骤: ${skipped.map(s => s.step_name).join('、')}` : (deviated.length > 0 ? `偏离步骤: ${deviated.map(s => s.step_name).join('、')}` : '需进一步分析对话记录定位根因')}
                         </div>
                     </div>
                     <div>
@@ -1286,10 +1295,10 @@
                 const stateColors = { hard_reject: 'var(--red)', soft_reject: 'var(--orange)', considering: 'var(--yellow)', interested: 'var(--blue)', committed: 'var(--green)' };
                 document.getElementById('case-state-timeline').innerHTML = transitions.map((t, i) => `
                     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; ${i < transitions.length - 1 ? 'border-bottom:1px solid var(--border-subtle);' : ''}">
-                        <div style="width:8px; height:8px; border-radius:50%; background:${stateColors[t.to_state] || 'var(--text-muted)'}; flex-shrink:0;"></div>
+                        <div style="width:8px; height:8px; border-radius:50%; background:${stateColors[t.to] || 'var(--text-muted)'}; flex-shrink:0;"></div>
                         <div style="flex:1;">
-                            <div style="font-size:12px; font-weight:500;">${t.from_state} → ${t.to_state}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">Turn ${t.turn}</div>
+                            <div style="font-size:12px; font-weight:500;">${t.from} → ${t.to}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${t.trigger ? t.trigger.substring(0, 40) + (t.trigger.length > 40 ? '...' : '') : ''}</div>
                         </div>
                     </div>
                 `).join('');

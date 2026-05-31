@@ -164,7 +164,7 @@ class UserStateMachine(BaseModel):
 
     def should_end_conversation(self, dialogue_history: list[dict]) -> bool:
         """Check if conversation should naturally end."""
-        max_turns = self.patience_level * 3  # patience=5→15轮, patience=1→3轮
+        max_turns = self.patience_level * 5  # patience=5→25轮, patience=1→5轮
         if self.current_state == UserState.COMMITTED or len(dialogue_history) >= max_turns:
             return True
         return False

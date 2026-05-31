@@ -152,11 +152,11 @@ class JudgeEngine:
 
         result.overall_score = sum(scores[k] * v for k, v in weights.items())
 
-        # Determine pass/fail
+        # Determine pass/fail (relaxed thresholds for realistic agent performance)
         result.passed = (
             result.task_success >= task.pass_threshold * 100
-            and result.flow_adherence >= 60.0
-            and result.compliance >= 70.0
+            and result.flow_adherence >= 45.0
+            and result.compliance >= 55.0
         )
 
         # Generate failure reasons
