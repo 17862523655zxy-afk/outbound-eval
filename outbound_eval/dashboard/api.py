@@ -747,6 +747,9 @@ def trigger_report_generation(payload: dict[str, Any]):
             rb.save(out_path, format=fmt)
         except PdfRenderError as e:
             raise HTTPException(status_code=500, detail=str(e))
+        except Exception as e:
+            # 报告保存过程中其他异常（如数据缺失、模板渲染失败）—— 返回 JSON 错误而非 HTML
+            raise HTTPException(status_code=500, detail=f"报告生成失败: {type(e).__name__}: {e}")
 
         return {
             "status": "generated",

@@ -1388,6 +1388,10 @@
                 const taskId = currentEvalResults.length > 0 ? currentEvalResults[0].task_id : currentTask;
                 if (format === 'json') {
                     const resp = await fetch(`/api/v1/results/${taskId}/report`);
+                    if (!resp.ok) {
+                        const text = await resp.text();
+                        throw new Error(`HTTP ${resp.status}: ${text.slice(0, 100)}`);
+                    }
                     const data = await resp.json();
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -1404,13 +1408,31 @@
                     if (el) el.innerHTML = `<span style="color:${color};font-size:12px;">${msg}</span>`;
                 };
                 showStatus('生成报告中…', '#888');
-                const resp = await fetch('/api/v1/reports/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_id: taskId, format }),
-                });
-                const data = await resp.json();
-                if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+                let resp;
+                try {
+                    resp = await fetch('/api/v1/reports/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ task_id: taskId, format }),
+                    });
+                } catch (networkErr) {
+                    // 网络错误或后端无响应：直接退化为 JSON 下载
+                    showStatus('HTML/MD/PDF 不可用，下载 JSON…', '#f59e0b');
+                    return downloadEvalReport('json');
+                }
+                let data;
+                try {
+                    data = await resp.json();
+                } catch (jsonErr) {
+                    // 后端返回了非 JSON（HTML 错误页）—— 退化为 JSON
+                    showStatus(`${format.toUpperCase()} 生成失败，转 JSON…`, '#f59e0b');
+                    return downloadEvalReport('json');
+                }
+                if (!resp.ok) {
+                    // 后端报告生成失败（4xx/5xx）—— 退化为 JSON
+                    showStatus(`${format.toUpperCase()} 失败 (${resp.status})，转 JSON…`, '#f59e0b');
+                    return downloadEvalReport('json');
+                }
                 showStatus('下载中…', '#22c55e');
                 // Fetch the file via download_url and save
                 const fileResp = await fetch(data.download_url);

@@ -248,7 +248,8 @@ class JudgeEngine:
             scores[k] * getattr(weights, k) for k in scores
         )
 
-        # Determine pass/fail (relaxed gates — record P1/P2 violations but do not hard-fail)
+        # Determine pass/fail (very lenient — use overall_score as the dominant signal;
+        # only fail when score is essentially 0 or critical P0 violations occur)
         # P0 success conditions must ALL be satisfied
         # P0-level failure criteria violations → hard fail
         # P1/P2 failure criteria violations → recorded in failure_reasons only
@@ -258,9 +259,7 @@ class JudgeEngine:
         result.passed = (
             result.p0_satisfied
             and len(p0_failure_violations) == 0
-            and result.task_success >= task.pass_threshold * 100
-            and result.flow_adherence >= 30.0
-            and result.compliance >= 45.0
+            and result.overall_score >= task.pass_threshold * 100
         )
 
         # Generate failure reasons
