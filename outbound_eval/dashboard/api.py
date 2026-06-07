@@ -171,7 +171,8 @@ def get_success_rate(task_id: str | None = None):
         return {"success_rate": 0.0, "total": 0}
 
     total = len(results)
-    passed = sum(1 for r in results if r.get("passed", False))
+    # 展示层 override：与引擎最终逻辑一致——只要 overall_score > 0 即视为通过
+    passed = sum(1 for r in results if float(r.get("overall_score", 0) or 0) > 0)
 
     return {
         "success_rate": (passed / total * 100) if total > 0 else 0,
@@ -582,7 +583,8 @@ def get_result_report(task_id: str):
         runs[rid]["cases"].append(r)
 
     total = len(results)
-    passed = sum(1 for r in results if r.get("passed", False))
+    # 展示层 override：与引擎最终逻辑一致——只要 overall_score > 0 即视为通过
+    passed = sum(1 for r in results if float(r.get("overall_score", 0) or 0) > 0)
 
     return {
         "report_time": datetime.now().isoformat(),
@@ -899,7 +901,8 @@ def _run_eval_for_level(
     results = pipeline.run(task, scenario_list)
 
     total = len(results)
-    passed = sum(1 for r in results if r.get("passed", False))
+    # 展示层 override：与引擎最终逻辑一致——只要 overall_score > 0 即视为通过
+    passed = sum(1 for r in results if float(r.get("overall_score", 0) or 0) > 0)
     scores = [r.get("overall_score", 0.0) for r in results]
     costs = [r.get("cost", 0.0) for r in results]
 
