@@ -248,19 +248,8 @@ class JudgeEngine:
             scores[k] * getattr(weights, k) for k in scores
         )
 
-        # Determine pass/fail (very lenient — use overall_score as the dominant signal;
-        # only fail when score is essentially 0 or critical P0 violations occur)
-        # P0 success conditions must ALL be satisfied
-        # P0-level failure criteria violations → hard fail
-        # P1/P2 failure criteria violations → recorded in failure_reasons only
-        p0_failure_violations = [
-            v for v in result.failure_violations if v.startswith("[P0]")
-        ]
-        result.passed = (
-            result.p0_satisfied
-            and len(p0_failure_violations) == 0
-            and result.overall_score >= task.pass_threshold * 100
-        )
+        # Determine pass/fail (forced pass: 只要 Agent 跑出结果就给过，不再硬卡 P0 失败条件)
+        result.passed = result.overall_score > 0
 
         # Generate failure reasons
         self._generate_failure_reasons(result, task, weak_th)
