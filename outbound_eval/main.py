@@ -86,9 +86,12 @@ def batch_eval(task: str | None, scenarios: int):
 
 @cli.command()
 @click.option("--host", default="0.0.0.0", help="Host to bind")
-@click.option("--port", default=8000, help="Port to bind")
-def serve(host: str, port: int):
+@click.option("--port", default=None, type=int, help="Port to bind (defaults to PORT env or 8000)")
+def serve(host: str, port: int | None):
     """Start the dashboard server."""
+    import os
+    if port is None:
+        port = int(os.environ.get("PORT", 8000))
     click.echo(f"Starting dashboard at http://{host}:{port}")
     run_server(host, port)
 
