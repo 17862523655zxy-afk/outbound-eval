@@ -1,0 +1,74 @@
+{
+  "experiment_id": "exp_cross_biz_demo",
+  "results": [
+    {
+      "experiment_id": "exp_cross_biz_demo",
+      "baseline_run": {
+        "version": "baseline"
+      },
+      "candidate_run": {
+        "version": "candidate"
+      },
+      "success_rate_delta": 0.0,
+      "score_delta": 0.0,
+      "cost_delta": 0.0,
+      "success_rate_delta_ci_95": [
+        0,
+        0
+      ],
+      "score_delta_ci_95": [
+        0,
+        0
+      ],
+      "p_value": 1.0,
+      "is_significant": false,
+      "effect_size": 0.0,
+      "recommendation": "inconclusive",
+      "confidence": 0.0,
+      "reasoning": "",
+      "difficulty_levels": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "per_difficulty": {
+        "easy": {
+          "difficulty": "easy",
+          "success_rate_delta": 5.0,
+          "score_delta": 0.0,
+          "sample_size": 14,
+          "p_value": 0.7,
+          "is_significant": false,
+          "effect_size": 0.1,
+          "baseline_success_rate": 40.0,
+          "candidate_success_rate": 45.0
+        },
+        "medium": {
+          "difficulty": "medium",
+          "success_rate_delta": -3.0,
+          "score_delta": 0.0,
+          "sample_size": 14,
+          "p_value": 0.8,
+          "is_significant": false,
+          "effect_size": 0.1,
+          "baseline_success_rate": 45.0,
+          "candidate_success_rate": 42.0
+        },
+        "hard": {
+          "difficulty": "hard",
+          "success_rate_delta": 2.0,
+          "score_delta": 0.0,
+          "sample_size": 12,
+          "p_value": 0.9,
+          "is_significant": false,
+          "effect_size": 0.05,
+          "baseline_success_rate": 30.0,
+          "candidate_success_rate": 32.0
+        }
+      },
+      "is_cross_business": true,
+      "baseline_task_id": "feimaotui_contract",
+      "candidate_task_id": "live_course_upgrade"
+    }
+  ]
+}

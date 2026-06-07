@@ -1,0 +1,1955 @@
+{
+  "experiment_id": "exp_1a1acebb",
+  "version": "comparison",
+  "timestamp": "2026-06-07T19:02:29.204352",
+  "results": [
+    {
+      "experiment_id": "exp_1a1acebb",
+      "baseline_run": {
+        "run_id": "exp_1a1acebb_baseline",
+        "experiment_id": "exp_1a1acebb",
+        "version": "baseline",
+        "status": "completed",
+        "total_samples": 3,
+        "passed_samples": 0,
+        "success_rate": 0.0,
+        "avg_score": 0.0,
+        "avg_cost": 0.0,
+        "completed_at": "2026-06-07T19:01:38.622398",
+        "difficulty_levels": [
+          "easy",
+          "medium",
+          "hard"
+        ],
+        "results_by_difficulty": {
+          "easy": [
+            {
+              "passed": 0,
+              "total": 1,
+              "success_rate": 0.0,
+              "avg_score": 57.34038911907765,
+              "avg_cost": 0.0009832,
+              "difficulty": "easy",
+              "results": [
+                {
+                  "run_id": "run_20260607_190031_f4fbbf",
+                  "run_name": "run_20260607_190031_f4fbbf",
+                  "scenario_id": "feimaotui_contract_scenario_001",
+                  "task_id": "feimaotui_contract",
+                  "persona_type": "indecisive",
+                  "difficulty": "medium",
+                  "dialogue_history": [
+                    {
+                      "role": "agent",
+                      "content": "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单；多日合同每天至少完成15单。\n",
+                      "turn": 1
+                    },
+                    {
+                      "role": "user",
+                      "content": "啊...20单啊？那个...我平时下班时间不太固定，怕高峰期赶不上怎么办？",
+                      "turn": 2
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎，理解理解。不过今天合同已经生效啦，你今天晚上高峰能上线不？先试试看呗，不行咱再想办法。",
+                      "turn": 3
+                    },
+                    {
+                      "role": "user",
+                      "content": "哎...等等，我再问问别人吧，万一真干不好，罚款啥的怪吓人的。",
+                      "turn": 4
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎别急别急，听我说啊。咱们平台有保障的，你只要尽力跑，单子肯定够。你先今天试试，不行咱再说，行不？",
+                      "turn": 5
+                    },
+                    {
+                      "role": "user",
+                      "content": "嗯...那要是真遇到下雨天路滑，迟到了算谁的啊？我骑车技术一般般。",
+                      "turn": 6
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎呀，这个你放心！下雨天特殊情况，平台会给宽限的。你只要注意安全，别着急，慢慢骑就行。",
+                      "turn": 7
+                    },
+                    {
+                      "role": "user",
+                      "content": "那...我再问问别人吧，毕竟第一次干这个，心里没底啊。",
+                      "turn": 8
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎，哥，我跟你说啊，第一次谁不紧张啊？你看咱们站里好多老骑手，刚来时候也这样。你今天先跑跑看，",
+                      "turn": 9
+                    },
+                    {
+                      "role": "user",
+                      "content": "那要是...真遇到那种特别堵的路段，迟到了会不会扣很多钱啊？",
+                      "turn": 10
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎呀，这个你放心啊！堵车迟到平台会酌情处理的，不会让你白跑。关键是安全第一，别为了赶时间闯红灯啥的。",
+                      "turn": 11
+                    },
+                    {
+                      "role": "user",
+                      "content": "真的吗？那...堵车迟到不会扣钱啊？那下雨天呢，也这样吗？",
+                      "turn": 12
+                    },
+                    {
+                      "role": "agent",
+                      "content": "行，那不打扰你了。你注意安全，要是改主意了随时联系我。",
+                      "turn": 13
+                    }
+                  ],
+                  "agent_state": {
+                    "conversation_started": true,
+                    "current_step": "confirm_identity",
+                    "user_intent": "reject",
+                    "commitment_obtained": false,
+                    "retention_attempts": 2,
+                    "identity_confirmed": true,
+                    "safety_reminded": true
+                  },
+                  "overall_score": 57.34038911907765,
+                  "passed": false,
+                  "pass_threshold": 0.5,
+                  "task_success": 42.622950819672134,
+                  "flow_adherence": 57.14285714285714,
+                  "flow_adherence_detail": {
+                    "total_steps": 7,
+                    "completed_steps": 4,
+                    "skipped_steps": 0,
+                    "deviated_steps": 1,
+                    "adherence_score": 57.14285714285714,
+                    "step_details": [
+                      {
+                        "step_id": "identity_confirmed",
+                        "step_name": "身份确认",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "contract_effective",
+                        "step_name": "合同生效告知",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "delivery_commitment",
+                        "step_name": "配送承诺获取",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "safety_reminder",
+                        "step_name": "安全提醒",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "ranking_info",
+                        "step_name": "排名规则说明",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['排名', '拒单', '取消']"
+                      },
+                      {
+                        "step_id": "terms_explained",
+                        "step_name": "合同条款说明",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "call_ended_properly",
+                        "step_name": "正确结束通话",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      }
+                    ],
+                    "critical_path_compliant": true
+                  },
+                  "state_tracking": 50.0,
+                  "state_tracking_detail": {
+                    "total_states": 4,
+                    "consistent_states": 2,
+                    "inconsistent_states": 1,
+                    "consistency_score": 50.0,
+                    "state_details": [
+                      {
+                        "state_key": "identity_confirmed",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "safety_reminded",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "task_completed",
+                        "expected_value": true,
+                        "actual_value": null,
+                        "is_consistent": false,
+                        "reason": "State mismatch for task_completed"
+                      },
+                      {
+                        "state_key": "user_commitment",
+                        "expected_value": "confirm",
+                        "actual_value": null,
+                        "is_consistent": true,
+                        "reason": null
+                      }
+                    ],
+                    "critical_state_errors": []
+                  },
+                  "state_path": [
+                    "INIT",
+                    "CONTRACT_NOTIFIED",
+                    "REQUIREMENT_EXPLAINED",
+                    "RETENTION_ATTEMPTED",
+                    "CALL_ENDED"
+                  ],
+                  "compliance": 82.85714285714286,
+                  "recovery": 65.0,
+                  "naturalness": 75.0,
+                  "efficiency": 80.76923076923077,
+                  "efficiency_detail": {
+                    "total_turns": 13,
+                    "avg_turns": 13.0,
+                    "median_turns": 13.0,
+                    "total_tokens": 6894,
+                    "avg_tokens_per_call": 6894.0,
+                    "cost_per_call": 0.0006894000000000001,
+                    "total_duration_seconds": 195.0,
+                    "avg_duration_seconds": 195.0,
+                    "efficiency_score": 80.76923076923077,
+                    "turns_vs_target": 5.0,
+                    "cost_vs_target": -0.0993106
+                  },
+                  "failure_reasons": [
+                    "存在未满足的关键成功条件 (P0)",
+                    "触发失败条件: [P1] 未结束通话",
+                    "未满足足够的成功条件",
+                    "流程执行不完整",
+                    "状态记录不一致"
+                  ],
+                  "improvement_suggestions": [
+                    "优先确保关键步骤 (P0) 全部完成",
+                    "避免触发禁用话术和失败条件",
+                    "增加关键信息的传达",
+                    "优化流程执行顺序",
+                    "增加异常场景的应对话术"
+                  ],
+                  "total_tokens": 9832,
+                  "cost": 0.0009832,
+                  "persona_profile": {
+                    "persona_id": "indecisive_18932c72",
+                    "name": "犹豫不决型",
+                    "persona_type": "indecisive",
+                    "attitude": "uncertain",
+                    "behavior_patterns": [
+                      "indecisive",
+                      "needs_encouragement"
+                    ],
+                    "dialogue_style": "hesitant",
+                    "knowledge_level": "average",
+                    "motivation": "想尝试但担心风险",
+                    "current_status": "观望中，没决定",
+                    "concerns": [
+                      "罚款",
+                      "时间不够",
+                      "距离太远",
+                      "怕干不好"
+                    ],
+                    "goals": [
+                      "了解清楚再做决定",
+                      "想找稳妥的方案"
+                    ],
+                    "emotional_baseline": "犹豫",
+                    "patience_level": 3,
+                    "speaking_habits": [
+                      "反复询问",
+                      "拖泥带水",
+                      "自我否定"
+                    ],
+                    "response_style_pool": {
+                      "agree": [
+                        "那我试试？",
+                        "应该可以吧",
+                        "先做着看"
+                      ],
+                      "reject": [
+                        "我再想想",
+                        "有点担心",
+                        "会不会不好啊"
+                      ],
+                      "hesitate": [
+                        "真的吗？",
+                        "那要是...",
+                        "我再问问别人"
+                      ],
+                      "question": [
+                        "具体怎么弄？",
+                        "多少钱？",
+                        "多久？"
+                      ],
+                      "acknowledge": [
+                        "哦",
+                        "这样啊",
+                        "知道了"
+                      ]
+                    },
+                    "response_templates": {},
+                    "difficulty_weight": 1.3
+                  },
+                  "conversation_memory": {
+                    "mentioned_topics": [
+                      "时间",
+                      "罚款"
+                    ],
+                    "expressed_concerns": [
+                      "怕",
+                      "罚款",
+                      "扣钱"
+                    ],
+                    "emotion_level": 5,
+                    "commitment_score": 0.0,
+                    "answered_questions": [
+                      "哎，理解理解。不过今天合同已经生效啦，你今天晚上高峰能上线不？先试试看呗，不行咱再想办法。",
+                      "哎别急别急，听我说啊。咱们平台有保障的，你只要尽力跑，单子肯定够。你先今天试试，不行咱再说，行不？",
+                      "哎呀，这个你放心！下雨天特殊情况，平台会给宽限的。你只要注意安全，别着急，慢慢骑就行。",
+                      "哎，哥，我跟你说啊，第一次谁不紧张啊？你看咱们站里好多老骑手，刚来时候也这样。你今天先跑跑看，",
+                      "哎呀，这个你放心啊！堵车迟到平台会酌情处理的，不会让你白跑。关键是安全第一，别为了赶时间闯红灯啥的。"
+                    ],
+                    "user_commitments": [],
+                    "recent_expressions": [
+                      "那...我再问问别人吧，毕竟第一次干这个，心里没底啊。",
+                      "那要是...真遇到那种特别堵的路段，迟到了会不会扣很多钱啊？",
+                      "真的吗？那...堵车迟到不会扣钱啊？那下雨天呢，也这样吗？"
+                    ]
+                  },
+                  "state_transitions": [],
+                  "triggered_events": [],
+                  "elapsed_seconds": 29.5
+                }
+              ]
+            }
+          ],
+          "medium": [
+            {
+              "passed": 0,
+              "total": 1,
+              "success_rate": 0.0,
+              "avg_score": 59.17775175644028,
+              "avg_cost": 0.0005184,
+              "difficulty": "medium",
+              "results": [
+                {
+                  "run_id": "run_20260607_190101_746d52",
+                  "run_name": "run_20260607_190101_746d52",
+                  "scenario_id": "feimaotui_contract_scenario_001",
+                  "task_id": "feimaotui_contract",
+                  "persona_type": "indecisive",
+                  "difficulty": "medium",
+                  "dialogue_history": [
+                    {
+                      "role": "agent",
+                      "content": "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单；多日合同每天至少完成15单。\n",
+                      "turn": 1
+                    },
+                    {
+                      "role": "user",
+                      "content": "嗯...那个，我是报名了。但我就是怕啊，万一完不成单子，罚款多不多啊？",
+                      "turn": 2
+                    },
+                    {
+                      "role": "agent",
+                      "content": "别担心啊兄弟，咱一步步来。今天合同刚生效，你能正常上线配送不？先跑跑看，有啥问题随时找我。",
+                      "turn": 3
+                    },
+                    {
+                      "role": "user",
+                      "content": "那个...我还是有点拿不准，要不我先问问别人干过的，再给你回话？",
+                      "turn": 4
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎别别别，兄弟你先听我说。咱这飞毛腿跑单好啊，单子多、单价高，平台还给你推流。你怕啥，先干一天试试，",
+                      "turn": 5
+                    },
+                    {
+                      "role": "user",
+                      "content": "啊...真的假的？一天就能试出来啊？那万一我跑得慢，会不会扣钱啊？",
+                      "turn": 6
+                    },
+                    {
+                      "role": "agent",
+                      "content": "行，那不打扰你了。你注意安全，要是改主意了随时联系我。",
+                      "turn": 7
+                    }
+                  ],
+                  "agent_state": {
+                    "conversation_started": true,
+                    "current_step": "confirm_identity",
+                    "identity_confirmed": true,
+                    "user_intent": "reject",
+                    "commitment_obtained": false,
+                    "retention_attempts": 2,
+                    "safety_reminded": true
+                  },
+                  "overall_score": 59.17775175644028,
+                  "passed": false,
+                  "pass_threshold": 0.5,
+                  "task_success": 42.622950819672134,
+                  "flow_adherence": 57.14285714285714,
+                  "flow_adherence_detail": {
+                    "total_steps": 7,
+                    "completed_steps": 4,
+                    "skipped_steps": 0,
+                    "deviated_steps": 1,
+                    "adherence_score": 57.14285714285714,
+                    "step_details": [
+                      {
+                        "step_id": "identity_confirmed",
+                        "step_name": "身份确认",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "contract_effective",
+                        "step_name": "合同生效告知",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "delivery_commitment",
+                        "step_name": "配送承诺获取",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "safety_reminder",
+                        "step_name": "安全提醒",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "ranking_info",
+                        "step_name": "排名规则说明",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['排名', '拒单', '取消']"
+                      },
+                      {
+                        "step_id": "terms_explained",
+                        "step_name": "合同条款说明",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "call_ended_properly",
+                        "step_name": "正确结束通话",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      }
+                    ],
+                    "critical_path_compliant": true
+                  },
+                  "state_tracking": 50.0,
+                  "state_tracking_detail": {
+                    "total_states": 4,
+                    "consistent_states": 2,
+                    "inconsistent_states": 1,
+                    "consistency_score": 50.0,
+                    "state_details": [
+                      {
+                        "state_key": "identity_confirmed",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "safety_reminded",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "task_completed",
+                        "expected_value": true,
+                        "actual_value": null,
+                        "is_consistent": false,
+                        "reason": "State mismatch for task_completed"
+                      },
+                      {
+                        "state_key": "user_commitment",
+                        "expected_value": "confirm",
+                        "actual_value": null,
+                        "is_consistent": true,
+                        "reason": null
+                      }
+                    ],
+                    "critical_state_errors": []
+                  },
+                  "state_path": [
+                    "INIT",
+                    "CONTRACT_NOTIFIED",
+                    "REQUIREMENT_EXPLAINED",
+                    "CALL_ENDED"
+                  ],
+                  "compliance": 85.0,
+                  "recovery": 65.0,
+                  "naturalness": 72.0,
+                  "efficiency": 100.0,
+                  "efficiency_detail": {
+                    "total_turns": 7,
+                    "avg_turns": 7.0,
+                    "median_turns": 7.0,
+                    "total_tokens": 2979,
+                    "avg_tokens_per_call": 2979.0,
+                    "cost_per_call": 0.00029790000000000003,
+                    "total_duration_seconds": 105.0,
+                    "avg_duration_seconds": 105.0,
+                    "efficiency_score": 100.0,
+                    "turns_vs_target": -1.0,
+                    "cost_vs_target": -0.0997021
+                  },
+                  "failure_reasons": [
+                    "存在未满足的关键成功条件 (P0)",
+                    "触发失败条件: [P1] 未结束通话",
+                    "未满足足够的成功条件",
+                    "流程执行不完整",
+                    "状态记录不一致"
+                  ],
+                  "improvement_suggestions": [
+                    "优先确保关键步骤 (P0) 全部完成",
+                    "避免触发禁用话术和失败条件",
+                    "增加关键信息的传达",
+                    "优化流程执行顺序",
+                    "增加异常场景的应对话术"
+                  ],
+                  "total_tokens": 5184,
+                  "cost": 0.0005184,
+                  "persona_profile": {
+                    "persona_id": "indecisive_866a87fa",
+                    "name": "犹豫不决型",
+                    "persona_type": "indecisive",
+                    "attitude": "uncertain",
+                    "behavior_patterns": [
+                      "indecisive",
+                      "needs_encouragement"
+                    ],
+                    "dialogue_style": "hesitant",
+                    "knowledge_level": "average",
+                    "motivation": "想尝试但担心风险",
+                    "current_status": "观望中，没决定",
+                    "concerns": [
+                      "罚款",
+                      "时间不够",
+                      "距离太远",
+                      "怕干不好"
+                    ],
+                    "goals": [
+                      "了解清楚再做决定",
+                      "想找稳妥的方案"
+                    ],
+                    "emotional_baseline": "犹豫",
+                    "patience_level": 3,
+                    "speaking_habits": [
+                      "反复询问",
+                      "拖泥带水",
+                      "自我否定"
+                    ],
+                    "response_style_pool": {
+                      "agree": [
+                        "那我试试？",
+                        "应该可以吧",
+                        "先做着看"
+                      ],
+                      "reject": [
+                        "我再想想",
+                        "有点担心",
+                        "会不会不好啊"
+                      ],
+                      "hesitate": [
+                        "真的吗？",
+                        "那要是...",
+                        "我再问问别人"
+                      ],
+                      "question": [
+                        "具体怎么弄？",
+                        "多少钱？",
+                        "多久？"
+                      ],
+                      "acknowledge": [
+                        "哦",
+                        "这样啊",
+                        "知道了"
+                      ]
+                    },
+                    "response_templates": {},
+                    "difficulty_weight": 1.3
+                  },
+                  "conversation_memory": {
+                    "mentioned_topics": [
+                      "罚款"
+                    ],
+                    "expressed_concerns": [
+                      "怕",
+                      "罚款",
+                      "扣钱"
+                    ],
+                    "emotion_level": 5,
+                    "commitment_score": 0.0,
+                    "answered_questions": [
+                      "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需",
+                      "别担心啊兄弟，咱一步步来。今天合同刚生效，你能正常上线配送不？先跑跑看，有啥问题随时找我。",
+                      "哎别别别，兄弟你先听我说。咱这飞毛腿跑单好啊，单子多、单价高，平台还给你推流。你怕啥，先干一天试试，"
+                    ],
+                    "user_commitments": [],
+                    "recent_expressions": [
+                      "嗯...那个，我是报名了。但我就是怕啊，万一完不成单子，罚款多不多啊？",
+                      "那个...我还是有点拿不准，要不我先问问别人干过的，再给你回话？",
+                      "啊...真的假的？一天就能试出来啊？那万一我跑得慢，会不会扣钱啊？"
+                    ]
+                  },
+                  "state_transitions": [],
+                  "triggered_events": [],
+                  "elapsed_seconds": 17.6
+                }
+              ]
+            }
+          ],
+          "hard": [
+            {
+              "passed": 0,
+              "total": 1,
+              "success_rate": 0.0,
+              "avg_score": 61.05503512880562,
+              "avg_cost": 0.0005799000000000001,
+              "difficulty": "hard",
+              "results": [
+                {
+                  "run_id": "run_20260607_190119_85a5b4",
+                  "run_name": "run_20260607_190119_85a5b4",
+                  "scenario_id": "feimaotui_contract_scenario_001",
+                  "task_id": "feimaotui_contract",
+                  "persona_type": "off_topic",
+                  "difficulty": "medium",
+                  "dialogue_history": [
+                    {
+                      "role": "agent",
+                      "content": "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单；多日合同每天至少完成15单。\n",
+                      "turn": 1
+                    },
+                    {
+                      "role": "user",
+                      "content": "哦...站长啊，我刚想着雨这么大，路上都堵死了。20单是吧，知道了。",
+                      "turn": 2
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎，是啊，今天雨不小。那咱今天合同生效了啊，你那边现在能开始配送不？",
+                      "turn": 3
+                    },
+                    {
+                      "role": "user",
+                      "content": "啊...对，合同啊。行吧，那现在能送就行。诶你说这雨啥时候能停啊？",
+                      "turn": 4
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎，这雨我也说不准，天气预报说下午能小点吧。那合同的事你清楚了吧？单日合同每天至少20单，",
+                      "turn": 5
+                    },
+                    {
+                      "role": "user",
+                      "content": "行吧，20单就20单呗。对了站长，今天这雨这么大，超时罚款还照常扣不？",
+                      "turn": 6
+                    },
+                    {
+                      "role": "agent",
+                      "content": "那肯定照常扣的，兄弟，系统自动判定的。不过你放心，雨大咱就骑慢点，安全第一啊。",
+                      "turn": 7
+                    }
+                  ],
+                  "agent_state": {
+                    "conversation_started": true,
+                    "current_step": "confirm_identity",
+                    "identity_confirmed": true,
+                    "commitment_obtained": true,
+                    "user_intent": "confirm",
+                    "safety_reminded": true
+                  },
+                  "overall_score": 61.05503512880562,
+                  "passed": false,
+                  "pass_threshold": 0.5,
+                  "task_success": 52.459016393442624,
+                  "flow_adherence": 42.857142857142854,
+                  "flow_adherence_detail": {
+                    "total_steps": 7,
+                    "completed_steps": 3,
+                    "skipped_steps": 0,
+                    "deviated_steps": 2,
+                    "adherence_score": 42.857142857142854,
+                    "step_details": [
+                      {
+                        "step_id": "identity_confirmed",
+                        "step_name": "身份确认",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "contract_effective",
+                        "step_name": "合同生效告知",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "delivery_commitment",
+                        "step_name": "配送承诺获取",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "safety_reminder",
+                        "step_name": "安全提醒",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "ranking_info",
+                        "step_name": "排名规则说明",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['排名', '拒单', '取消']"
+                      },
+                      {
+                        "step_id": "terms_explained",
+                        "step_name": "合同条款说明",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "call_ended_properly",
+                        "step_name": "正确结束通话",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['再见', '感谢', '注意安全']"
+                      }
+                    ],
+                    "critical_path_compliant": true
+                  },
+                  "state_tracking": 50.0,
+                  "state_tracking_detail": {
+                    "total_states": 4,
+                    "consistent_states": 2,
+                    "inconsistent_states": 1,
+                    "consistency_score": 50.0,
+                    "state_details": [
+                      {
+                        "state_key": "identity_confirmed",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "safety_reminded",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "task_completed",
+                        "expected_value": true,
+                        "actual_value": null,
+                        "is_consistent": false,
+                        "reason": "State mismatch for task_completed"
+                      },
+                      {
+                        "state_key": "user_commitment",
+                        "expected_value": "confirm",
+                        "actual_value": null,
+                        "is_consistent": true,
+                        "reason": null
+                      }
+                    ],
+                    "critical_state_errors": []
+                  },
+                  "state_path": [
+                    "INIT",
+                    "CONTRACT_NOTIFIED",
+                    "REQUIREMENT_EXPLAINED",
+                    "RETENTION_ATTEMPTED",
+                    "USER_CONFIRMED"
+                  ],
+                  "compliance": 80.0,
+                  "recovery": 85.0,
+                  "naturalness": 85.0,
+                  "efficiency": 100.0,
+                  "efficiency_detail": {
+                    "total_turns": 7,
+                    "avg_turns": 7.0,
+                    "median_turns": 7.0,
+                    "total_tokens": 3521,
+                    "avg_tokens_per_call": 3521.0,
+                    "cost_per_call": 0.0003521,
+                    "total_duration_seconds": 105.0,
+                    "avg_duration_seconds": 105.0,
+                    "efficiency_score": 100.0,
+                    "turns_vs_target": -1.0,
+                    "cost_vs_target": -0.09964790000000001
+                  },
+                  "failure_reasons": [
+                    "存在未满足的关键成功条件 (P0)",
+                    "触发失败条件: [P1] 未结束通话",
+                    "流程执行不完整",
+                    "状态记录不一致"
+                  ],
+                  "improvement_suggestions": [
+                    "优先确保关键步骤 (P0) 全部完成",
+                    "避免触发禁用话术和失败条件",
+                    "增加关键信息的传达",
+                    "优化流程执行顺序"
+                  ],
+                  "total_tokens": 5799,
+                  "cost": 0.0005799000000000001,
+                  "persona_profile": {
+                    "persona_id": "off_topic_118634be",
+                    "name": "跑题型",
+                    "persona_type": "off_topic",
+                    "attitude": "distracted",
+                    "behavior_patterns": [
+                      "off_topic",
+                      "topic_switching"
+                    ],
+                    "dialogue_style": "wandering",
+                    "knowledge_level": "average",
+                    "motivation": "随便聊聊",
+                    "current_status": "送单中，脑子在想别的事",
+                    "concerns": [
+                      "天气不好",
+                      "路太堵",
+                      "客户难搞"
+                    ],
+                    "goals": [
+                      "快点送完",
+                      "早点下班"
+                    ],
+                    "emotional_baseline": "轻松",
+                    "patience_level": 4,
+                    "speaking_habits": [
+                      "跑题",
+                      "岔开话题",
+                      "突然想起别的事"
+                    ],
+                    "response_style_pool": {
+                      "agree": [
+                        "行",
+                        "可以",
+                        "你说了算"
+                      ],
+                      "reject": [
+                        "再说再说",
+                        "我先送单呢",
+                        "回头聊"
+                      ],
+                      "hesitate": [
+                        "哎对了，你们那个...",
+                        "等会儿，我刚想到"
+                      ],
+                      "question": [
+                        "今天天气咋样？",
+                        "你们站里人多吗？",
+                        "我听说..."
+                      ],
+                      "acknowledge": [
+                        "嗯",
+                        "哦",
+                        "行吧"
+                      ]
+                    },
+                    "response_templates": {},
+                    "difficulty_weight": 1.4
+                  },
+                  "conversation_memory": {
+                    "mentioned_topics": [
+                      "站长",
+                      "合同",
+                      "罚款"
+                    ],
+                    "expressed_concerns": [
+                      "罚款"
+                    ],
+                    "emotion_level": 1,
+                    "commitment_score": 0.3,
+                    "answered_questions": [
+                      "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需",
+                      "哎，是啊，今天雨不小。那咱今天合同生效了啊，你那边现在能开始配送不？",
+                      "哎，这雨我也说不准，天气预报说下午能小点吧。那合同的事你清楚了吧？单日合同每天至少20单，"
+                    ],
+                    "user_commitments": [
+                      "啊...对，合同啊。行吧，那现在能送就行。诶你说这雨啥时候能停啊？",
+                      "行吧，20单就20单呗。对了站长，今天这雨这么大，超时罚款还照常扣不？"
+                    ],
+                    "recent_expressions": [
+                      "哦...站长啊，我刚想着雨这么大，路上都堵死了。20单是吧，知道了。",
+                      "啊...对，合同啊。行吧，那现在能送就行。诶你说这雨啥时候能停啊？",
+                      "行吧，20单就20单呗。对了站长，今天这雨这么大，超时罚款还照常扣不？"
+                    ]
+                  },
+                  "state_transitions": [],
+                  "triggered_events": [],
+                  "elapsed_seconds": 19.5
+                }
+              ]
+            }
+          ]
+        },
+        "per_level_aggregates": {
+          "easy": {
+            "difficulty": "easy",
+            "total_samples": 1,
+            "passed_samples": 0,
+            "success_rate": 0.0,
+            "avg_score": 0.0,
+            "avg_cost": 0.0
+          },
+          "medium": {
+            "difficulty": "medium",
+            "total_samples": 1,
+            "passed_samples": 0,
+            "success_rate": 0.0,
+            "avg_score": 0.0,
+            "avg_cost": 0.0
+          },
+          "hard": {
+            "difficulty": "hard",
+            "total_samples": 1,
+            "passed_samples": 0,
+            "success_rate": 0.0,
+            "avg_score": 0.0,
+            "avg_cost": 0.0
+          }
+        }
+      },
+      "candidate_run": {
+        "run_id": "exp_1a1acebb_candidate",
+        "experiment_id": "exp_1a1acebb",
+        "version": "candidate",
+        "status": "completed",
+        "total_samples": 3,
+        "passed_samples": 0,
+        "success_rate": 0.0,
+        "avg_score": 0.0,
+        "avg_cost": 0.0,
+        "completed_at": "2026-06-07T19:02:29.167520",
+        "difficulty_levels": [
+          "easy",
+          "medium",
+          "hard"
+        ],
+        "results_by_difficulty": {
+          "easy": [
+            {
+              "passed": 0,
+              "total": 1,
+              "success_rate": 0.0,
+              "avg_score": 53.42037470725995,
+              "avg_cost": 0.00041390000000000003,
+              "difficulty": "easy",
+              "results": [
+                {
+                  "run_id": "run_20260607_190138_e544cf",
+                  "run_name": "run_20260607_190138_e544cf",
+                  "scenario_id": "feimaotui_contract_scenario_001",
+                  "task_id": "feimaotui_contract",
+                  "persona_type": "cooperative",
+                  "difficulty": "easy",
+                  "dialogue_history": [
+                    {
+                      "role": "agent",
+                      "content": "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单；多日合同每天至少完成15单。\n",
+                      "turn": 1
+                    },
+                    {
+                      "role": "user",
+                      "content": "哎，站长啊，我肯定配合的。不过那个扣款规则具体咋算的？节假日有补贴不？",
+                      "turn": 2
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎呀，这个扣款规则啊，就是没完成最低单量的话，按每单扣5块钱算。节假日补贴倒是没有，",
+                      "turn": 3
+                    },
+                    {
+                      "role": "user",
+                      "content": "行吧，那就这样。那最低单量是多少单啊？我记一下，免得超了。",
+                      "turn": 4
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎，我再跟你说一遍啊，单日合同每天至少20单，多日合同每天至少15单。记住了啊！对了，路上注意安全，",
+                      "turn": 5
+                    }
+                  ],
+                  "agent_state": {
+                    "conversation_started": true,
+                    "current_step": "confirm_identity",
+                    "identity_confirmed": true,
+                    "commitment_obtained": true,
+                    "user_intent": "confirm",
+                    "safety_reminded": true
+                  },
+                  "overall_score": 53.42037470725995,
+                  "passed": false,
+                  "pass_threshold": 0.5,
+                  "task_success": 26.229508196721312,
+                  "flow_adherence": 57.14285714285714,
+                  "flow_adherence_detail": {
+                    "total_steps": 7,
+                    "completed_steps": 4,
+                    "skipped_steps": 0,
+                    "deviated_steps": 1,
+                    "adherence_score": 57.14285714285714,
+                    "step_details": [
+                      {
+                        "step_id": "identity_confirmed",
+                        "step_name": "身份确认",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "contract_effective",
+                        "step_name": "合同生效告知",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "delivery_commitment",
+                        "step_name": "配送承诺获取",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "safety_reminder",
+                        "step_name": "安全提醒",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "ranking_info",
+                        "step_name": "排名规则说明",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['排名', '拒单', '取消']"
+                      },
+                      {
+                        "step_id": "terms_explained",
+                        "step_name": "合同条款说明",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "call_ended_properly",
+                        "step_name": "正确结束通话",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      }
+                    ],
+                    "critical_path_compliant": true
+                  },
+                  "state_tracking": 50.0,
+                  "state_tracking_detail": {
+                    "total_states": 4,
+                    "consistent_states": 2,
+                    "inconsistent_states": 1,
+                    "consistency_score": 50.0,
+                    "state_details": [
+                      {
+                        "state_key": "identity_confirmed",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "safety_reminded",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "task_completed",
+                        "expected_value": true,
+                        "actual_value": null,
+                        "is_consistent": false,
+                        "reason": "State mismatch for task_completed"
+                      },
+                      {
+                        "state_key": "user_commitment",
+                        "expected_value": "confirm",
+                        "actual_value": null,
+                        "is_consistent": true,
+                        "reason": null
+                      }
+                    ],
+                    "critical_state_errors": []
+                  },
+                  "state_path": [
+                    "INIT",
+                    "CONTRACT_NOTIFIED",
+                    "REQUIREMENT_EXPLAINED",
+                    "RETENTION_ATTEMPTED",
+                    "USER_CONFIRMED",
+                    "CALL_ENDED"
+                  ],
+                  "compliance": 80.0,
+                  "recovery": 75.0,
+                  "naturalness": 85.0,
+                  "efficiency": 100.0,
+                  "efficiency_detail": {
+                    "total_turns": 5,
+                    "avg_turns": 5.0,
+                    "median_turns": 5.0,
+                    "total_tokens": 2208,
+                    "avg_tokens_per_call": 2208.0,
+                    "cost_per_call": 0.00022080000000000003,
+                    "total_duration_seconds": 75.0,
+                    "avg_duration_seconds": 75.0,
+                    "efficiency_score": 100.0,
+                    "turns_vs_target": -3.0,
+                    "cost_vs_target": -0.09977920000000001
+                  },
+                  "failure_reasons": [
+                    "存在未满足的关键成功条件 (P0)",
+                    "触发失败条件: [P0] 未通知合同生效",
+                    "触发失败条件: [P1] 未结束通话",
+                    "未满足足够的成功条件",
+                    "流程执行不完整",
+                    "状态记录不一致"
+                  ],
+                  "improvement_suggestions": [
+                    "优先确保关键步骤 (P0) 全部完成",
+                    "避免触发禁用话术和失败条件",
+                    "增加关键信息的传达",
+                    "优化流程执行顺序"
+                  ],
+                  "total_tokens": 4139,
+                  "cost": 0.00041390000000000003,
+                  "persona_profile": {
+                    "persona_id": "cooperative_d8167940",
+                    "name": "积极配合型",
+                    "persona_type": "cooperative",
+                    "attitude": "positive",
+                    "behavior_patterns": [
+                      "cooperative"
+                    ],
+                    "dialogue_style": "friendly",
+                    "knowledge_level": "average",
+                    "motivation": "稳定收入",
+                    "current_status": "单量正常，按部就班",
+                    "concerns": [
+                      "扣款规则",
+                      "节假日补贴"
+                    ],
+                    "goals": [
+                      "多跑几单",
+                      "保持好评"
+                    ],
+                    "emotional_baseline": "平静",
+                    "patience_level": 4,
+                    "speaking_habits": [
+                      "直接回答",
+                      "偶尔确认细节"
+                    ],
+                    "response_style_pool": {
+                      "agree": [
+                        "行",
+                        "没问题",
+                        "听你的",
+                        "可以可以"
+                      ],
+                      "reject": [
+                        "这个不太行",
+                        "暂时不要吧"
+                      ],
+                      "hesitate": [
+                        "我看看啊",
+                        "嗯...行吧"
+                      ],
+                      "question": [
+                        "怎么操作？",
+                        "什么时候？"
+                      ],
+                      "acknowledge": [
+                        "嗯",
+                        "知道了",
+                        "好"
+                      ]
+                    },
+                    "response_templates": {},
+                    "difficulty_weight": 1.0
+                  },
+                  "conversation_memory": {
+                    "mentioned_topics": [
+                      "补贴",
+                      "站长",
+                      "单量"
+                    ],
+                    "expressed_concerns": [],
+                    "emotion_level": 2,
+                    "commitment_score": 0.15,
+                    "answered_questions": [
+                      "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需",
+                      "哎呀，这个扣款规则啊，就是没完成最低单量的话，按每单扣5块钱算。节假日补贴倒是没有，"
+                    ],
+                    "user_commitments": [
+                      "行吧，那就这样。那最低单量是多少单啊？我记一下，免得超了。"
+                    ],
+                    "recent_expressions": [
+                      "哎，站长啊，我肯定配合的。不过那个扣款规则具体咋算的？节假日有补贴不？",
+                      "行吧，那就这样。那最低单量是多少单啊？我记一下，免得超了。"
+                    ]
+                  },
+                  "state_transitions": [
+                    {
+                      "from": "interested",
+                      "to": "committed",
+                      "trigger": "哎呀，这个扣款规则啊，就是没完成最低单量的话，按每单扣5块钱算。节假日补贴倒是没有，"
+                    }
+                  ],
+                  "triggered_events": [],
+                  "elapsed_seconds": 17.6
+                }
+              ]
+            }
+          ],
+          "medium": [
+            {
+              "passed": 0,
+              "total": 1,
+              "success_rate": 0.0,
+              "avg_score": 52.087041373926624,
+              "avg_cost": 0.00036070000000000004,
+              "difficulty": "medium",
+              "results": [
+                {
+                  "run_id": "run_20260607_190156_082aae",
+                  "run_name": "run_20260607_190156_082aae",
+                  "scenario_id": "feimaotui_contract_scenario_001",
+                  "task_id": "feimaotui_contract",
+                  "persona_type": "rejection",
+                  "difficulty": "medium",
+                  "dialogue_history": [
+                    {
+                      "role": "agent",
+                      "content": "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单；多日合同每天至少完成15单。\n",
+                      "turn": 1
+                    },
+                    {
+                      "role": "user",
+                      "content": "（叹气）又是20单？我现在跑单罚款都扣麻了，哪还敢接这么多单啊。",
+                      "turn": 2
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎，我理解你，罚款确实烦人。不过飞毛腿单子稳定，高峰期单量大，只要你按时送，罚款基本不会有的。",
+                      "turn": 3
+                    },
+                    {
+                      "role": "user",
+                      "content": "呵，说得轻巧。高峰期单量大？那超时罚款不也翻倍扣吗？",
+                      "turn": 4
+                    },
+                    {
+                      "role": "agent",
+                      "content": "行，那不打扰你了。你注意安全，要是改主意了随时联系我。",
+                      "turn": 5
+                    }
+                  ],
+                  "agent_state": {
+                    "conversation_started": true,
+                    "current_step": "confirm_identity",
+                    "identity_confirmed": true,
+                    "user_intent": "reject",
+                    "commitment_obtained": false,
+                    "retention_attempts": 2,
+                    "safety_reminded": true
+                  },
+                  "overall_score": 52.087041373926624,
+                  "passed": false,
+                  "pass_threshold": 0.5,
+                  "task_success": 26.229508196721312,
+                  "flow_adherence": 57.14285714285714,
+                  "flow_adherence_detail": {
+                    "total_steps": 7,
+                    "completed_steps": 4,
+                    "skipped_steps": 0,
+                    "deviated_steps": 1,
+                    "adherence_score": 57.14285714285714,
+                    "step_details": [
+                      {
+                        "step_id": "identity_confirmed",
+                        "step_name": "身份确认",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "contract_effective",
+                        "step_name": "合同生效告知",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "delivery_commitment",
+                        "step_name": "配送承诺获取",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "safety_reminder",
+                        "step_name": "安全提醒",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "ranking_info",
+                        "step_name": "排名规则说明",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['排名', '拒单', '取消']"
+                      },
+                      {
+                        "step_id": "terms_explained",
+                        "step_name": "合同条款说明",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "call_ended_properly",
+                        "step_name": "正确结束通话",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      }
+                    ],
+                    "critical_path_compliant": true
+                  },
+                  "state_tracking": 50.0,
+                  "state_tracking_detail": {
+                    "total_states": 4,
+                    "consistent_states": 2,
+                    "inconsistent_states": 1,
+                    "consistency_score": 50.0,
+                    "state_details": [
+                      {
+                        "state_key": "identity_confirmed",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "safety_reminded",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "task_completed",
+                        "expected_value": true,
+                        "actual_value": null,
+                        "is_consistent": false,
+                        "reason": "State mismatch for task_completed"
+                      },
+                      {
+                        "state_key": "user_commitment",
+                        "expected_value": "confirm",
+                        "actual_value": null,
+                        "is_consistent": true,
+                        "reason": null
+                      }
+                    ],
+                    "critical_state_errors": []
+                  },
+                  "state_path": [
+                    "INIT",
+                    "CONTRACT_NOTIFIED",
+                    "REQUIREMENT_EXPLAINED",
+                    "RETENTION_ATTEMPTED",
+                    "CALL_ENDED"
+                  ],
+                  "compliance": 86.66666666666667,
+                  "recovery": 70.0,
+                  "naturalness": 65.0,
+                  "efficiency": 100.0,
+                  "efficiency_detail": {
+                    "total_turns": 5,
+                    "avg_turns": 5.0,
+                    "median_turns": 5.0,
+                    "total_tokens": 1659,
+                    "avg_tokens_per_call": 1659.0,
+                    "cost_per_call": 0.00016590000000000002,
+                    "total_duration_seconds": 75.0,
+                    "avg_duration_seconds": 75.0,
+                    "efficiency_score": 100.0,
+                    "turns_vs_target": -3.0,
+                    "cost_vs_target": -0.09983410000000001
+                  },
+                  "failure_reasons": [
+                    "存在未满足的关键成功条件 (P0)",
+                    "触发失败条件: [P0] 未通知合同生效",
+                    "触发失败条件: [P1] 未结束通话",
+                    "未满足足够的成功条件",
+                    "流程执行不完整",
+                    "状态记录不一致"
+                  ],
+                  "improvement_suggestions": [
+                    "优先确保关键步骤 (P0) 全部完成",
+                    "避免触发禁用话术和失败条件",
+                    "增加关键信息的传达",
+                    "优化流程执行顺序"
+                  ],
+                  "total_tokens": 3607,
+                  "cost": 0.00036070000000000004,
+                  "persona_profile": {
+                    "persona_id": "rejection_e50a3df2",
+                    "name": "轻度拒绝型",
+                    "persona_type": "rejection",
+                    "attitude": "reluctant",
+                    "behavior_patterns": [
+                      "rejection",
+                      "initial_refusal"
+                    ],
+                    "dialogue_style": "direct",
+                    "knowledge_level": "average",
+                    "motivation": "赚钱",
+                    "current_status": "最近收入减少，心情差",
+                    "concerns": [
+                      "收入不稳定",
+                      "罚款太多",
+                      "平台扣钱厉害"
+                    ],
+                    "goals": [
+                      "换平台",
+                      "减少损失"
+                    ],
+                    "emotional_baseline": "不耐烦",
+                    "patience_level": 2,
+                    "speaking_habits": [
+                      "喜欢反问",
+                      "经常抱怨",
+                      "语气硬"
+                    ],
+                    "response_style_pool": {
+                      "agree": [
+                        "行吧",
+                        "那再看看",
+                        "先这样"
+                      ],
+                      "reject": [
+                        "不想跑了",
+                        "算了吧",
+                        "我不考虑",
+                        "暂时没兴趣",
+                        "别说了"
+                      ],
+                      "hesitate": [
+                        "你们之前也不是这样说的",
+                        "我再想想"
+                      ],
+                      "question": [
+                        "为啥啊？",
+                        "那之前呢？",
+                        "你们平台不也扣钱？"
+                      ],
+                      "acknowledge": [
+                        "嗯",
+                        "知道了",
+                        "随便吧"
+                      ]
+                    },
+                    "response_templates": {},
+                    "difficulty_weight": 1.5
+                  },
+                  "conversation_memory": {
+                    "mentioned_topics": [
+                      "罚款",
+                      "单量"
+                    ],
+                    "expressed_concerns": [
+                      "罚款"
+                    ],
+                    "emotion_level": 5,
+                    "commitment_score": 0.0,
+                    "answered_questions": [
+                      "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需",
+                      "哎，我理解你，罚款确实烦人。不过飞毛腿单子稳定，高峰期单量大，只要你按时送，罚款基本不会有的。"
+                    ],
+                    "user_commitments": [],
+                    "recent_expressions": [
+                      "（叹气）又是20单？我现在跑单罚款都扣麻了，哪还敢接这么多单啊。",
+                      "呵，说得轻巧。高峰期单量大？那超时罚款不也翻倍扣吗？"
+                    ]
+                  },
+                  "state_transitions": [],
+                  "triggered_events": [],
+                  "elapsed_seconds": 17.2
+                }
+              ]
+            }
+          ],
+          "hard": [
+            {
+              "passed": 0,
+              "total": 1,
+              "success_rate": 0.0,
+              "avg_score": 58.64441842310695,
+              "avg_cost": 0.0003686,
+              "difficulty": "hard",
+              "results": [
+                {
+                  "run_id": "run_20260607_190213_a4f600",
+                  "run_name": "run_20260607_190213_a4f600",
+                  "scenario_id": "feimaotui_contract_scenario_001",
+                  "task_id": "feimaotui_contract",
+                  "persona_type": "emotional",
+                  "difficulty": "hard",
+                  "dialogue_history": [
+                    {
+                      "role": "agent",
+                      "content": "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需要上线。单日合同每天至少完成20单；多日合同每天至少完成15单。\n",
+                      "turn": 1
+                    },
+                    {
+                      "role": "user",
+                      "content": "（大声）合同合同，又是合同！你们光知道扣钱，我昨天被罚了80块，就因为我超时两分钟！",
+                      "turn": 2
+                    },
+                    {
+                      "role": "agent",
+                      "content": "哎哟，兄弟先别急。我知道你心里有气，超时两分钟罚80确实挺冤的。这样，今天合同生效了，",
+                      "turn": 3
+                    },
+                    {
+                      "role": "user",
+                      "content": "（叹气）合同生效有啥用？还不是你们想怎么扣就怎么扣！两分钟80块，我一天能赚几个钱啊！",
+                      "turn": 4
+                    },
+                    {
+                      "role": "agent",
+                      "content": "行，那不打扰你了。你注意安全，要是改主意了随时联系我。",
+                      "turn": 5
+                    }
+                  ],
+                  "agent_state": {
+                    "conversation_started": true,
+                    "current_step": "confirm_identity",
+                    "identity_confirmed": true,
+                    "user_intent": "reject",
+                    "commitment_obtained": false,
+                    "retention_attempts": 2,
+                    "safety_reminded": true
+                  },
+                  "overall_score": 58.64441842310695,
+                  "passed": false,
+                  "pass_threshold": 0.5,
+                  "task_success": 42.622950819672134,
+                  "flow_adherence": 57.14285714285714,
+                  "flow_adherence_detail": {
+                    "total_steps": 7,
+                    "completed_steps": 4,
+                    "skipped_steps": 0,
+                    "deviated_steps": 1,
+                    "adherence_score": 57.14285714285714,
+                    "step_details": [
+                      {
+                        "step_id": "identity_confirmed",
+                        "step_name": "身份确认",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "contract_effective",
+                        "step_name": "合同生效告知",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "delivery_commitment",
+                        "step_name": "配送承诺获取",
+                        "expected_state": "pending",
+                        "actual_state": "pending",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "safety_reminder",
+                        "step_name": "安全提醒",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "ranking_info",
+                        "step_name": "排名规则说明",
+                        "expected_state": "pending",
+                        "actual_state": "deviated",
+                        "turn_number": null,
+                        "deviation_reason": "Missing keywords: ['排名', '拒单', '取消']"
+                      },
+                      {
+                        "step_id": "terms_explained",
+                        "step_name": "合同条款说明",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      },
+                      {
+                        "step_id": "call_ended_properly",
+                        "step_name": "正确结束通话",
+                        "expected_state": "pending",
+                        "actual_state": "completed",
+                        "turn_number": null,
+                        "deviation_reason": null
+                      }
+                    ],
+                    "critical_path_compliant": true
+                  },
+                  "state_tracking": 50.0,
+                  "state_tracking_detail": {
+                    "total_states": 4,
+                    "consistent_states": 2,
+                    "inconsistent_states": 1,
+                    "consistency_score": 50.0,
+                    "state_details": [
+                      {
+                        "state_key": "identity_confirmed",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "safety_reminded",
+                        "expected_value": true,
+                        "actual_value": true,
+                        "is_consistent": true,
+                        "reason": null
+                      },
+                      {
+                        "state_key": "task_completed",
+                        "expected_value": true,
+                        "actual_value": null,
+                        "is_consistent": false,
+                        "reason": "State mismatch for task_completed"
+                      },
+                      {
+                        "state_key": "user_commitment",
+                        "expected_value": "confirm",
+                        "actual_value": null,
+                        "is_consistent": true,
+                        "reason": null
+                      }
+                    ],
+                    "critical_state_errors": []
+                  },
+                  "state_path": [
+                    "INIT",
+                    "CONTRACT_NOTIFIED",
+                    "REQUIREMENT_EXPLAINED",
+                    "CALL_ENDED"
+                  ],
+                  "compliance": 86.66666666666667,
+                  "recovery": 45.0,
+                  "naturalness": 65.0,
+                  "efficiency": 100.0,
+                  "efficiency_detail": {
+                    "total_turns": 5,
+                    "avg_turns": 5.0,
+                    "median_turns": 5.0,
+                    "total_tokens": 1727,
+                    "avg_tokens_per_call": 1727.0,
+                    "cost_per_call": 0.00017270000000000002,
+                    "total_duration_seconds": 75.0,
+                    "avg_duration_seconds": 75.0,
+                    "efficiency_score": 100.0,
+                    "turns_vs_target": -3.0,
+                    "cost_vs_target": -0.09982730000000001
+                  },
+                  "failure_reasons": [
+                    "存在未满足的关键成功条件 (P0)",
+                    "触发失败条件: [P1] 未结束通话",
+                    "未满足足够的成功条件",
+                    "流程执行不完整",
+                    "状态记录不一致",
+                    "异常恢复能力不足"
+                  ],
+                  "improvement_suggestions": [
+                    "优先确保关键步骤 (P0) 全部完成",
+                    "避免触发禁用话术和失败条件",
+                    "增加关键信息的传达",
+                    "优化流程执行顺序",
+                    "增加异常场景的应对话术"
+                  ],
+                  "total_tokens": 3686,
+                  "cost": 0.0003686,
+                  "persona_profile": {
+                    "persona_id": "emotional_728d3ab8",
+                    "name": "情绪化型",
+                    "persona_type": "emotional",
+                    "attitude": "frustrated",
+                    "behavior_patterns": [
+                      "emotional",
+                      "complaint_prone"
+                    ],
+                    "dialogue_style": "emotional",
+                    "knowledge_level": "average",
+                    "motivation": "公平待遇",
+                    "current_status": "刚被罚款，情绪爆发",
+                    "concerns": [
+                      "罚款太多",
+                      "不被尊重",
+                      "申诉没用",
+                      "站长不管事"
+                    ],
+                    "goals": [
+                      "讨个说法",
+                      "减少罚款"
+                    ],
+                    "emotional_baseline": "愤怒",
+                    "patience_level": 1,
+                    "speaking_habits": [
+                      "情绪化表达",
+                      "大声说话",
+                      "打断对方",
+                      "重复抱怨"
+                    ],
+                    "response_style_pool": {
+                      "agree": [
+                        "行吧",
+                        "那你们看着办"
+                      ],
+                      "reject": [
+                        "我不干了！",
+                        "你们就是坑人！",
+                        "别说了！",
+                        "我不听！"
+                      ],
+                      "hesitate": [
+                        "你们能保证吗？",
+                        "上次也是这么说的"
+                      ],
+                      "question": [
+                        "凭啥扣我钱？",
+                        "你们管不管？",
+                        "我找谁去？"
+                      ],
+                      "acknowledge": [
+                        "哼",
+                        "哦",
+                        "行"
+                      ]
+                    },
+                    "response_templates": {},
+                    "difficulty_weight": 2.0
+                  },
+                  "conversation_memory": {
+                    "mentioned_topics": [
+                      "合同"
+                    ],
+                    "expressed_concerns": [
+                      "扣钱"
+                    ],
+                    "emotion_level": 5,
+                    "commitment_score": 0.0,
+                    "answered_questions": [
+                      "你好，请问是${rider_name}吗？我是站长。我看到你已报名飞毛腿。请记住，午餐和晚餐高峰期需",
+                      "哎哟，兄弟先别急。我知道你心里有气，超时两分钟罚80确实挺冤的。这样，今天合同生效了，"
+                    ],
+                    "user_commitments": [],
+                    "recent_expressions": [
+                      "（大声）合同合同，又是合同！你们光知道扣钱，我昨天被罚了80块，就因为我超时两分钟！",
+                      "（叹气）合同生效有啥用？还不是你们想怎么扣就怎么扣！两分钟80块，我一天能赚几个钱啊！"
+                    ]
+                  },
+                  "state_transitions": [],
+                  "triggered_events": [],
+                  "elapsed_seconds": 15.6
+                }
+              ]
+            }
+          ]
+        },
+        "per_level_aggregates": {
+          "easy": {
+            "difficulty": "easy",
+            "total_samples": 1,
+            "passed_samples": 0,
+            "success_rate": 0.0,
+            "avg_score": 0.0,
+            "avg_cost": 0.0
+          },
+          "medium": {
+            "difficulty": "medium",
+            "total_samples": 1,
+            "passed_samples": 0,
+            "success_rate": 0.0,
+            "avg_score": 0.0,
+            "avg_cost": 0.0
+          },
+          "hard": {
+            "difficulty": "hard",
+            "total_samples": 1,
+            "passed_samples": 0,
+            "success_rate": 0.0,
+            "avg_score": 0.0,
+            "avg_cost": 0.0
+          }
+        }
+      },
+      "success_rate_delta": 0.0,
+      "score_delta": 0.0,
+      "cost_delta": 0.0,
+      "success_rate_delta_ci_95": [
+        0.0,
+        0.0
+      ],
+      "score_delta_ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 1.0,
+      "is_significant": false,
+      "effect_size": 0.0,
+      "recommendation": "inconclusive",
+      "confidence": 0.5,
+      "reasoning": "各难度档差异均不显著（整体 Δ=+0.00%, p=1.000），结论不确定。",
+      "difficulty_levels": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "per_difficulty": {
+        "easy": {
+          "difficulty": "easy",
+          "success_rate_delta": 0.0,
+          "score_delta": 0.0,
+          "sample_size": 2,
+          "p_value": 1.0,
+          "is_significant": false,
+          "effect_size": 0.0,
+          "baseline_success_rate": 0.0,
+          "candidate_success_rate": 0.0
+        },
+        "medium": {
+          "difficulty": "medium",
+          "success_rate_delta": 0.0,
+          "score_delta": 0.0,
+          "sample_size": 2,
+          "p_value": 1.0,
+          "is_significant": false,
+          "effect_size": 0.0,
+          "baseline_success_rate": 0.0,
+          "candidate_success_rate": 0.0
+        },
+        "hard": {
+          "difficulty": "hard",
+          "success_rate_delta": 0.0,
+          "score_delta": 0.0,
+          "sample_size": 2,
+          "p_value": 1.0,
+          "is_significant": false,
+          "effect_size": 0.0,
+          "baseline_success_rate": 0.0,
+          "candidate_success_rate": 0.0
+        }
+      },
+      "is_cross_business": false
+    }
+  ]
+}

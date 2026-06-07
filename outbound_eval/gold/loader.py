@@ -44,25 +44,32 @@ class GoldConversationLoader:
     ) -> list[GoldConversation]:
         """Load conversations for a specific task.
 
+        The YAML's ``task_id`` field is matched (not the directory name,
+        which is often shortened like ``feimaotui`` for the
+        ``feimaotui_contract`` task).
+
         Args:
-            task_id: Task ID (maps to subdirectory name)
+            task_id: Task ID stored in the gold YAML's ``task_id`` field
             persona_type: Optional filter by persona type
 
         Returns:
             List of GoldConversations
         """
-        task_dir = self.library_dir / task_id
-        if not task_dir.exists():
-            return []
-
         conversations = []
-        for conv_file in task_dir.glob("*.yaml"):
+        # Directory name is not necessarily equal to task_id (e.g. the
+        # folder is ``feimaotui`` but YAMLs have ``task_id: feimaotui_contract``).
+        # Scan all YAMLs and filter by their parsed ``task_id`` field.
+        for conv_file in self.library_dir.rglob("*.yaml"):
             try:
                 conv = self._load_file(conv_file)
-                if persona_type is None or conv.persona_type == persona_type:
-                    conversations.append(conv)
             except Exception as e:
                 print(f"Warning: Failed to load {conv_file}: {e}")
+                continue
+            if conv.task_id != task_id:
+                continue
+            if persona_type is not None and conv.persona_type != persona_type:
+                continue
+            conversations.append(conv)
 
         return conversations
 

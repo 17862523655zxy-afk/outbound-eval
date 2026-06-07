@@ -25,3 +25,9 @@ pytest-asyncio>=0.23.0
 
 # Frontend
 jinja2>=3.1.0
+
+# Excel reading
+openpyxl>=3.1.0
+
+# PDF rendering
+weasyprint>=60.0

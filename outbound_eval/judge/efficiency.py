@@ -52,7 +52,7 @@ class EfficiencyJudge:
 
     def evaluate(
         self,
-        dialogue_history: list[dict],
+        dialogue_history: list[dict[str, object]],
         total_tokens: int = 0,
     ) -> EfficiencyMetrics:
         """Evaluate efficiency.

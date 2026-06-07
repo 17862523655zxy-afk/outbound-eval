@@ -310,10 +310,10 @@
                     <span class="icon">▤</span> 评测记录
                 </div>
                 <div class="nav-item" onclick="showView('benchmarks')" data-view="benchmarks">
-                    <span class="icon">◉</span> Benchmarks
+                    <span class="icon">◉</span> 评测场景
                 </div>
                 <div class="nav-item" onclick="showView('datasets')" data-view="datasets">
-                    <span class="icon">◫</span> 数据集
+                    <span class="icon">◫</span> 测试资产
                 </div>
                 <div class="nav-section">分析</div>
                 <div class="nav-item" onclick="showView('persona')" data-view="persona">
@@ -331,6 +331,9 @@
                 <div class="nav-item" onclick="showView('trajectories')" data-view="trajectories">
                     <span class="icon">↗</span> 成功路径
                 </div>
+                <div class="nav-item" onclick="showView('ab-experiments')" data-view="ab-experiments">
+                    <span class="icon">◓</span> A/B 实验对比
+                </div>
             </nav>
         </aside>
 
@@ -340,10 +343,145 @@
                     <a onclick="showView('home')">工作台</a>
                 </div>
                 <div class="topbar-actions">
+                    <button class="btn btn-sm" id="intro-btn" onclick="toggleIntroDrawer()" title="功能简介">?</button>
                     <button class="btn btn-sm" id="theme-toggle" onclick="toggleTheme()">◐</button>
                     <button class="btn btn-sm" onclick="showSettings()">⚙ Settings</button>
                 </div>
             </header>
+
+            <div id="intro-mask" onclick="closeIntroDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"></div>
+            <aside id="intro-drawer" style="display:none;position:fixed;top:0;right:0;width:420px;max-width:90vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);z-index:901;overflow-y:auto;box-shadow:-4px 0 16px rgba(0,0,0,0.2);">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:1;">
+                    <h3 style="font-size:15px;font-weight:700;margin:0;">功能导览</h3>
+                    <button class="btn btn-sm" onclick="closeIntroDrawer()" title="关闭 (Esc)">×</button>
+                </div>
+                <div id="intro-list" style="padding:12px 20px;"></div>
+            </aside>
+
+            <div id="excel-mask" onclick="closeExcelImportDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"></div>
+            <aside id="excel-drawer" style="display:none;position:fixed;top:0;right:0;width:520px;max-width:95vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);z-index:901;overflow-y:auto;box-shadow:-4px 0 16px rgba(0,0,0,0.2);">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:1;">
+                    <h3 style="font-size:15px;font-weight:700;margin:0;">📥 从题面导入任务</h3>
+                    <button class="btn btn-sm" onclick="closeExcelImportDrawer()" title="关闭 (Esc)">×</button>
+                </div>
+                    <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">
+                        把题面文本粘贴进来（或上传 <code>.xlsx</code> 任务文件），系统会自动解析 6 段结构（Role / Task / Opening Line / Call Flow / FAQ / Constraints）生成可评测 YAML。
+                    </p>
+
+                    <div class="form-group">
+                        <label>任务 ID</label>
+                        <input class="form-input" id="excel-task-id" placeholder="例如 feimaotui_v3" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>上传 .xlsx 文件（可选）</label>
+                        <input type="file" id="excel-file" accept=".xlsx,.xls,.txt,.md" style="font-size:12px;color:var(--text-secondary);" />
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+                            浏览器内会自动读取 .txt/.md/.xlsx 的第一个 sheet；本机 .xlsx 也可走 CLI：<code>python -m outbound_eval parse-instruction 命题二.xlsx</code>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>或直接粘贴题面文本</label>
+                        <textarea class="form-input" id="excel-text" rows="14" style="font-family:monospace;font-size:12px;line-height:1.5;" placeholder="# Role
+你是...
+
+# Task
+致电...
+
+# Opening Line
+你好...
+
+# Call Flow
+1. ...
+2. ...
+
+# Knowledge Points (FAQ)
+- ...
+
+# Constraints
+- ..."></textarea>
+                    </div>
+
+                    <div style="display:flex;gap:8px;margin-top:8px;">
+                        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);">
+                            <input type="checkbox" id="excel-save" checked /> 落盘到 data/benchmarks/tasks/
+                        </label>
+                    </div>
+
+                    <div style="display:flex;gap:8px;margin-top:16px;">
+                        <button class="btn btn-primary" onclick="submitExcelImport()">解析并生成 YAML</button>
+                        <button class="btn" onclick="closeExcelImportDrawer()">取消</button>
+                    </div>
+
+                    <div id="excel-import-result" style="margin-top:16px;"></div>
+            </aside>
+
+            <div id="benchmark-edit-mask" onclick="closeBenchmarkEditDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"></div>
+            <aside id="benchmark-edit-drawer" style="display:none;position:fixed;top:0;right:0;width:520px;max-width:95vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);z-index:901;overflow-y:auto;box-shadow:-4px 0 16px rgba(0,0,0,0.2);">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:1;">
+                    <h3 style="font-size:15px;font-weight:700;margin:0;" id="benchmark-edit-title">✏ 编辑评测场景</h3>
+                    <button class="btn btn-sm" onclick="closeBenchmarkEditDrawer()">×</button>
+                </div>
+                <div style="padding:16px 20px;">
+                    <div class="form-group">
+                        <label>任务 ID（不可改）</label>
+                        <input class="form-input" id="bm-edit-id" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label>任务名称</label>
+                        <input class="form-input" id="bm-edit-name" />
+                    </div>
+                    <div class="form-group">
+                        <label>业务说明</label>
+                        <textarea class="form-input" id="bm-edit-desc" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>难度</label>
+                        <select class="form-input" id="bm-edit-difficulty">
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>通过阈值（0.0~1.0）</label>
+                        <input class="form-input" id="bm-edit-threshold" type="number" step="0.05" min="0" max="1" />
+                    </div>
+                    <div class="form-group">
+                        <label>评分权重（七维，0.0~1.0，建议总和=1.0）</label>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 12px;font-size:12px;margin-top:6px;">
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">任务完成</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-task_success" style="width:70px;" /></label>
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">流程遵循</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-flow_adherence" style="width:70px;" /></label>
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">状态追踪</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-state_tracking" style="width:70px;" /></label>
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">合规性</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-compliance" style="width:70px;" /></label>
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">挽回能力</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-recovery" style="width:70px;" /></label>
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">自然度</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-naturalness" style="width:70px;" /></label>
+                            <label style="display:flex;align-items:center;gap:6px;"><span style="flex:1;color:var(--text-secondary);">效率</span><input class="form-input" type="number" step="0.05" min="0" max="1" id="bm-w-efficiency" style="width:70px;" /></label>
+                        </div>
+                        <div id="bm-edit-weights-sum" style="font-size:11px;color:var(--text-muted);margin-top:4px;">权重总和: 0.00（建议 1.00）</div>
+                        <div style="margin-top:6px;">
+                            <label style="font-size:11px;color:var(--text-secondary);">弱维度告警阈值（0~100，低于此分触发改进建议）</label>
+                            <input class="form-input" type="number" step="5" min="0" max="100" id="bm-w-weak-threshold" style="width:100px;margin-top:2px;" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>通过条件 <span style="color:var(--text-muted);font-size:11px;">（每条 name/description/priority 可改）</span></label>
+                        <div id="bm-edit-success-list"></div>
+                        <button class="btn btn-sm" onclick="addSuccessCriterionRow()">+ 添加条件</button>
+                    </div>
+                    <div class="form-group">
+                        <label>失败红线</label>
+                        <div id="bm-edit-failure-list"></div>
+                        <button class="btn btn-sm" onclick="addFailureCriterionRow()">+ 添加红线</button>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:16px;">
+                        <button class="btn btn-primary" onclick="submitBenchmarkEdit()">保存</button>
+                        <button class="btn" onclick="closeBenchmarkEditDrawer()">取消</button>
+                    </div>
+                    <div id="bm-edit-status" style="margin-top:12px;"></div>
+                </div>
+            </aside>
 
             <div class="content" id="content-area">
                 <!-- Level 1: Home -->
@@ -351,7 +489,10 @@
                     <div class="hero">
                         <h1>复杂外呼场景评测平台</h1>
                         <p>多轮对话 Agent 自动化评测系统。生成复杂用户画像、注入事件、自动评分、分析失败原因。</p>
-                        <button class="btn btn-primary" onclick="startNewRun()">+ 新建评测</button>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="startNewRun()">+ 新建评测</button>
+                            <button class="btn" onclick="openExcelImportDrawer()">📥 从题面导入</button>
+                        </div>
                     </div>
 
                     <div class="grid grid-4 mb-6">
@@ -387,8 +528,8 @@
                     <div class="grid grid-2">
                         <div class="card">
                             <div class="card-header">
-                                <div><div class="card-title">可用 Benchmarks</div></div>
-                                <button class="btn btn-sm">管理</button>
+                                <div><div class="card-title">评测场景</div></div>
+                                <button class="btn btn-sm" onclick="showView('benchmarks');loadBenchmarks();">管理</button>
                             </div>
                             <div class="card-body" id="home-benchmarks">
                                 <div class="empty"><p>加载中...</p></div>
@@ -396,8 +537,8 @@
                         </div>
                         <div class="card">
                             <div class="card-header">
-                                <div><div class="card-title">评测数据集</div></div>
-                                <button class="btn btn-sm">管理</button>
+                                <div><div class="card-title">测试资产</div></div>
+                                <button class="btn btn-sm" onclick="showView('datasets');loadDatasets();">管理</button>
                             </div>
                             <div class="card-body" id="home-datasets">
                                 <div class="empty"><p>加载中...</p></div>
@@ -523,8 +664,12 @@
                             <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;" id="eval-subtitle">-</p>
                         </div>
                         <div class="flex gap-2">
-                            <button class="btn btn-sm" onclick="downloadEvalReport()">下载报告</button>
+                            <button class="btn btn-sm" onclick="downloadEvalReport('html')">⬇ HTML 报告</button>
+                            <button class="btn btn-sm" onclick="downloadEvalReport('md')">⬇ Markdown</button>
+                            <button class="btn btn-sm" onclick="downloadEvalReport('pdf')">⬇ PDF</button>
+                            <button class="btn btn-sm" onclick="downloadEvalReport('json')">⬇ JSON</button>
                             <button class="btn btn-primary btn-sm" onclick="rerunEval()">重新运行</button>
+                            <span id="report-download-status" style="margin-left:8px;"></span>
                         </div>
                     </div>
 
@@ -613,7 +758,17 @@
                         </div>
                     </div>
 
-                    <!-- Row 4: Dialogue -->
+                    <!-- Row 4: State Path -->
+                    <div class="card mb-4">
+                        <div class="card-header"><div class="card-title">Agent 状态路径</div></div>
+                        <div class="card-body">
+                            <div id="case-state-path" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <div style="color:var(--text-muted); font-size:13px;">加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Dialogue -->
                     <div class="card">
                         <div class="card-header"><div class="card-title">完整对话记录</div></div>
                         <div class="card-body"><div class="chat" id="case-dialogue"></div></div>
@@ -632,23 +787,66 @@
                 </div>
 
                 <div class="view" id="view-benchmarks">
-                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Benchmarks</h2>
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">评测场景</h2>
                     <div class="card">
                         <table class="table" id="benchmarks-table">
-                            <thead><tr><th>名称</th><th>描述</th><th>Case数</th><th>最后运行</th></tr></thead>
+                            <thead><tr><th>任务名称</th><th>业务说明</th><th>判定项</th><th>难度</th><th>最近运行</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="view" id="view-datasets">
-                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">数据集</h2>
-                    <div class="card">
-                        <table class="table" id="datasets-table">
-                            <thead><tr><th>名称</th><th>类型</th><th>记录数</th><th>最后更新</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
+                <div class="view" id="view-benchmark-detail">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <button class="btn btn-secondary" onclick="goBackToBenchmarks()">← 返回</button>
+                            <h2 style="font-size:18px;font-weight:700;margin:0;" id="benchmark-detail-title">评测场景详情</h2>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-sm" onclick="openBenchmarkEditDrawer()">✏ 编辑</button>
+                            <button class="btn btn-sm" style="background:#ef4444;color:#fff;border-color:#ef4444;" onclick="confirmDeleteBenchmark()">🗑 删除</button>
+                        </div>
                     </div>
+                    <div id="benchmark-detail-content"></div>
+                </div>
+
+                <div class="view" id="view-datasets">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">测试资产</h2>
+                    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;">
+                        <div class="card" style="cursor:pointer;" onclick="showView('benchmarks');loadBenchmarks();" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='var(--border)'">
+                            <div style="font-size:12px;color:#888;margin-bottom:6px;">评测任务</div>
+                            <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="ds-task-count">—</div>
+                            <div style="font-size:12px;color:#888;line-height:1.6;" id="ds-task-preview">加载中…</div>
+                        </div>
+                        <div class="card" style="cursor:pointer;" onclick="showView('gold-detail');loadGoldDetail('')">
+                            <div style="font-size:12px;color:#888;margin-bottom:6px;">标准对话</div>
+                            <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="ds-gold-count">—</div>
+                            <div style="font-size:12px;color:#888;line-height:1.6;" id="ds-gold-preview">加载中…</div>
+                        </div>
+                        <div class="card" style="cursor:pointer;" onclick="showView('persona-detail');loadPersonaDetail('')">
+                            <div style="font-size:12px;color:#888;margin-bottom:6px;">用户画像</div>
+                            <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="ds-persona-count">—</div>
+                            <div style="font-size:12px;color:#888;line-height:1.6;" id="ds-persona-preview">加载中…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-gold-detail">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                        <button class="btn btn-secondary" onclick="goBackToDatasets()">← 返回</button>
+                        <h2 style="font-size:18px;font-weight:700;margin:0;" id="gold-detail-title">标准对话</h2>
+                    </div>
+                    <div id="gold-list" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:12px;margin-bottom:24px;"></div>
+                    <div id="gold-detail-content"></div>
+                </div>
+
+                <div class="view" id="view-persona-detail">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                        <button class="btn btn-secondary" onclick="goBackToDatasets()">← 返回</button>
+                        <h2 style="font-size:18px;font-weight:700;margin:0;" id="persona-detail-title">用户画像</h2>
+                    </div>
+                    <div id="persona-list" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:12px;margin-bottom:24px;"></div>
+                    <div id="persona-detail-content"></div>
                 </div>
 
                 <div class="view" id="view-persona">
@@ -693,6 +891,55 @@
                         <div class="card-body" id="trajectories-content">
                             <div class="empty"><p>请先运行评测</p></div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-ab-experiments">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">A/B 实验对比</h2>
+                    <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;">
+                        对比两个评测任务在 <strong>同一组场景</strong> 下的表现差异。常见用途：
+                        <br/>· 同一业务 <strong>不同 prompt 版本</strong>（如改写前后）：把 task_id 选成同一个，难度勾一档就行
+                        <br/>· 同一业务 <strong>不同难度切片</strong>：把 task_id 选成同一个，难度勾 3 档，跑完会出"难度 × 版本"对比矩阵
+                        <br/>· <span style="color:var(--text-muted);">⚠ 跨业务对比（如飞毛腿 vs 直播课）只能看通过率参考值，不具可比性</span>
+                    </p>
+                    <div class="grid grid-2 mb-4">
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">新建实验</div></div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>基线任务 (baseline)</label>
+                                    <select class="form-input" id="ab-baseline-task"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>候选任务 (candidate)</label>
+                                    <select class="form-input" id="ab-candidate-task"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>难度切片（可多选）</label>
+                                    <div id="ab-difficulty-levels" style="display:flex; gap:12px; align-items:center; font-size:13px;">
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ab-diff-cb" value="easy" checked /> easy</label>
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ab-diff-cb" value="medium" checked /> medium</label>
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ab-diff-cb" value="hard" checked /> hard</label>
+                                    </div>
+                                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">勾多档 → 同一业务跑多档难度，输出"难度 × 版本"对比矩阵</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>每档场景数</label>
+                                    <input type="number" class="form-input" id="ab-scenarios" value="5" min="1" max="20">
+                                </div>
+                                <button class="btn btn-primary" onclick="startABExperiment()">启动 A/B 实验</button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><div class="card-title">实验列表</div></div>
+                            <div class="card-body" id="ab-experiments-list">
+                                <div class="empty"><p>暂无实验记录</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" id="ab-comparison-card" style="display:none;">
+                        <div class="card-header"><div class="card-title">对比结果</div></div>
+                        <div class="card-body" id="ab-comparison-content"></div>
                     </div>
                 </div>
 
@@ -807,19 +1054,26 @@
             if (viewName === 'difficulty') loadDifficultyAnalysis();
             if (viewName === 'heatmap') loadHeatmap();
             if (viewName === 'trajectories') loadTrajectories();
+            if (viewName === 'ab-experiments') loadABExperiments();
+            if (viewName === 'gold-detail') loadGoldDetail(currentGoldId);
+            if (viewName === 'persona-detail') loadPersonaDetail(currentPersonaType);
         }
 
         function updateBreadcrumbs(viewName) {
             const map = {
                 home: '<a onclick="showView(\'home\')">工作台</a>',
                 evals: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'evals\')">评测记录</a>',
-                benchmarks: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'benchmarks\')">Benchmarks</a>',
-                datasets: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'datasets\')">数据集</a>',
+                benchmarks: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'benchmarks\')">评测场景</a>',
+                datasets: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'datasets\')">测试资产</a>',
                 persona: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'persona\')">画像分析</a>',
                 failures: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'failures\')">失败归因</a>',
                 difficulty: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'difficulty\')">难度分析</a>',
                 heatmap: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'heatmap\')">失败热力图</a>',
                 trajectories: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'trajectories\')">成功路径</a>',
+                'ab-experiments': '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'ab-experiments\')">A/B 实验</a>',
+                'benchmark-detail': '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'benchmarks\')">评测场景</a><span class="breadcrumb-sep">/</span><span id="benchmark-detail-breadcrumb">详情</span>',
+                'gold-detail': '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'datasets\')">测试资产</a><span class="breadcrumb-sep">/</span><span>标准对话</span>',
+                'persona-detail': '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><a onclick="showView(\'datasets\')">测试资产</a><span class="breadcrumb-sep">/</span><span>用户画像</span>',
                 settings: '<a onclick="showView(\'home\')">工作台</a><span class="breadcrumb-sep">/</span><span>Settings</span>',
             };
             document.getElementById('breadcrumbs').innerHTML = map[viewName] || '';
@@ -1129,20 +1383,50 @@
             updateConfigPreview();
         }
 
-        async function downloadEvalReport() {
+        async function downloadEvalReport(format = 'json') {
             try {
                 const taskId = currentEvalResults.length > 0 ? currentEvalResults[0].task_id : currentTask;
-                const resp = await fetch(`/api/v1/results/${taskId}/report`);
+                if (format === 'json') {
+                    const resp = await fetch(`/api/v1/results/${taskId}/report`);
+                    const data = await resp.json();
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `eval_report_${taskId}_${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    return;
+                }
+                // HTML / MD / PDF: ask backend to generate on demand
+                const showStatus = (msg, color = '#888') => {
+                    const el = document.getElementById('report-download-status');
+                    if (el) el.innerHTML = `<span style="color:${color};font-size:12px;">${msg}</span>`;
+                };
+                showStatus('生成报告中…', '#888');
+                const resp = await fetch('/api/v1/reports/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_id: taskId, format }),
+                });
                 const data = await resp.json();
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
+                if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+                showStatus('下载中…', '#22c55e');
+                // Fetch the file via download_url and save
+                const fileResp = await fetch(data.download_url);
+                if (!fileResp.ok) throw new Error('下载失败');
+                const blob = await fileResp.blob();
+                const mime = { html: 'text/html', md: 'text/markdown', pdf: 'application/pdf' }[format] || 'application/octet-stream';
+                const url = URL.createObjectURL(new Blob([blob], { type: mime }));
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `eval_report_${taskId}_${new Date().toISOString().slice(0, 10)}.json`;
+                a.download = (data.path || '').split('/').pop() || `report.${format}`;
                 a.click();
                 URL.revokeObjectURL(url);
+                setTimeout(() => showStatus('✓ 已下载', '#22c55e'), 200);
             } catch (e) {
-                alert('下载失败: ' + e.message);
+                const el = document.getElementById('report-download-status');
+                if (el) el.innerHTML = `<span style="color:#ef4444;font-size:12px;">✗ ${e.message}</span>`;
             }
         }
 
@@ -1235,34 +1519,58 @@
 
             document.getElementById('case-metrics-detail').innerHTML = metricsHtml;
 
-            // === Analysis Module ===
-            if (!result.passed) {
-                document.getElementById('case-analysis-card').style.display = 'block';
-                const reasons = result.failure_reasons || [];
-                const suggestions = result.improvement_suggestions || [];
-                const detail = result.flow_adherence_detail || {};
-                const stepDetails = detail.step_details || [];
-                const skipped = stepDetails.filter(s => s.actual_state === 'skipped');
-                const deviated = stepDetails.filter(s => s.actual_state === 'deviated');
-                document.getElementById('case-analysis').innerHTML = `
-                    <div style="margin-bottom:16px;">
-                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Failure Reason</div>
-                        ${reasons.length > 0 ? reasons.map(r => `<div style="padding:6px 0; color:var(--red); font-size:13px;">• ${r}</div>`).join('') : '<div style="color:var(--text-muted); font-size:13px;">未记录失败原因</div>'}
+            // === Analysis Module (now shown for ALL cases, not only failed) ===
+            document.getElementById('case-analysis-card').style.display = 'block';
+            const reasons = result.failure_reasons || [];
+            const suggestions = result.improvement_suggestions || [];
+            const detail = result.flow_adherence_detail || {};
+            const stepDetails = detail.step_details || [];
+            const skipped = stepDetails.filter(s => s.actual_state === 'skipped');
+            const deviated = stepDetails.filter(s => s.actual_state === 'deviated');
+
+            // 扣分明细（仅失败 case 显示）：从 criterion_details 里挑未满足的，按 score 升序
+            const penaltyLines = (result.criterion_details || [])
+                .filter(d => !d.satisfied)
+                .map(d => {
+                    const loss = (1 - (d.score || 0)) * 100;
+                    return { name: d.name, priority: d.priority || 'P?', loss, reasoning: d.reasoning || '', evidence: d.evidence || [] };
+                })
+                .sort((a, b) => b.loss - a.loss);
+
+            const penaltyHtml = !result.passed && penaltyLines.length > 0
+                ? `<div style="margin-bottom:16px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">📉 本次扣分明细（按扣分从大到小）</div>
+                    <ol style="padding-left:18px;margin:0;font-size:12px;line-height:1.7;">
+                        ${penaltyLines.map(p => `
+                            <li>
+                                <span style="background:#fef2f2;color:#991b1b;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;margin-right:6px;">-${p.loss.toFixed(0)}分</span>
+                                <strong>${escapeHtml(p.name)}</strong>
+                                <span style="color:var(--text-muted);font-size:11px;">[${escapeHtml(p.priority)}]</span>
+                                ${p.reasoning ? `<div style="color:var(--text-secondary);font-size:11px;margin-top:2px;margin-left:24px;">${escapeHtml(p.reasoning)}</div>` : ''}
+                            </li>
+                        `).join('')}
+                    </ol>
+                </div>`
+                : '';
+
+            document.getElementById('case-analysis').innerHTML = `
+                ${penaltyHtml}
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Failure Reason</div>
+                    ${reasons.length > 0 ? reasons.map(r => `<div style="padding:6px 0; color:var(--red); font-size:13px;">• ${r}</div>`).join('') : '<div style="color:var(--text-muted); font-size:13px;">—</div>'}
+                </div>
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Root Cause</div>
+                    <div style="font-size:13px; color:var(--text-secondary);">
+                        ${skipped.length > 0 ? `遗漏步骤: ${skipped.map(s => s.step_name).join('、')}` : (deviated.length > 0 ? `偏离步骤: ${deviated.map(s => s.step_name).join('、')}` : '—')}
                     </div>
-                    <div style="margin-bottom:16px;">
-                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Root Cause</div>
-                        <div style="font-size:13px; color:var(--text-secondary);">
-                            ${skipped.length > 0 ? `遗漏步骤: ${skipped.map(s => s.step_name).join('、')}` : (deviated.length > 0 ? `偏离步骤: ${deviated.map(s => s.step_name).join('、')}` : '需进一步分析对话记录定位根因')}
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Improvement Suggestions</div>
-                        ${suggestions.length > 0 ? suggestions.map(s => `<div style="padding:6px 0; font-size:13px;">• ${s}</div>`).join('') : '<div style="color:var(--text-muted); font-size:13px;">无改进建议</div>'}
-                    </div>
-                `;
-            } else {
-                document.getElementById('case-analysis-card').style.display = 'none';
-            }
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Improvement Suggestions</div>
+                    ${suggestions.length > 0 ? suggestions.map(s => `<div style="padding:6px 0; font-size:13px;">• ${s}</div>`).join('') : '<div style="color:var(--text-muted); font-size:13px;">—</div>'}
+                </div>
+                ${renderCriterionDetails(result.criterion_details || [])}
+            `;
 
             // === Memory Snapshot ===
             const mem = result.conversation_memory || {};
@@ -1304,6 +1612,20 @@
                 `).join('');
             } else {
                 document.getElementById('case-state-timeline').innerHTML = '<div style="color:var(--text-muted); font-size:13px;">无状态转换记录</div>';
+            }
+
+            // === State Path ===
+            const statePath = result.state_path || [];
+            if (statePath.length > 1) {
+                const pathColors = { INIT: 'var(--text-muted)', CONTRACT_NOTIFIED: 'var(--blue)', REQUIREMENT_EXPLAINED: 'var(--cyan)', RETENTION_ATTEMPTED: 'var(--yellow)', USER_CONFIRMED: 'var(--green)', CALL_ENDED: 'var(--green)' };
+                document.getElementById('case-state-path').innerHTML = statePath.map((s, i) => `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="badge" style="background:${pathColors[s] || 'var(--text-muted)'}20; color:${pathColors[s] || 'var(--text-muted)'}; border:1px solid ${pathColors[s] || 'var(--text-muted)'}40;">${s}</span>
+                        ${i < statePath.length - 1 ? '<span style="color:var(--text-muted);">→</span>' : ''}
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('case-state-path').innerHTML = '<div style="color:var(--text-muted); font-size:13px;">未检测到状态路径</div>';
             }
 
             // === Triggered Events ===
@@ -1404,17 +1726,354 @@
         }
 
         async function loadBenchmarks() {
-            document.querySelector('#benchmarks-table tbody').innerHTML = `
-                <tr><td>飞毛腿合同评测</td><td>骑手合同签署通知场景</td><td>10</td><td>2026-05-31</td></tr>
-                <tr><td>直播升级告知</td><td>课程发布页面升级</td><td>8</td><td>2026-05-31</td></tr>
+            try {
+                const resp = await fetch('/api/v1/assets/summary');
+                const data = await resp.json();
+                const tasks = data.tasks || [];
+                const tbody = document.querySelector('#benchmarks-table tbody');
+                if (tasks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:24px;">暂无评测场景</td></tr>';
+                    return;
+                }
+                const difficultyBadge = (d) => {
+                    const map = { easy: '#22c55e', medium: '#f59e0b', hard: '#ef4444' };
+                    return `<span style="font-size:11px;background:${map[d] || '#9e9e9e'};color:#fff;padding:2px 8px;border-radius:3px;">${escapeHtml(d)}</span>`;
+                };
+                tbody.innerHTML = tasks.map(t => {
+                    const lastRun = t.last_run_at ? new Date(t.last_run_at * 1000).toLocaleString('zh-CN') : '<span style="color:#999;">—</span>';
+                    const desc = (t.description || '').split('\n')[0] || '—';
+                    return `
+                    <tr style="cursor:pointer;" onclick="showBenchmarkDetail('${escapeHtml(t.task_id)}')" onmouseover="this.style.background='#f5f5ff'" onmouseout="this.style.background=''">
+                        <td><strong>${escapeHtml(t.name)}</strong><div style="font-size:11px;color:#888;margin-top:2px;">${escapeHtml(t.task_id)}</div></td>
+                        <td style="color:#666;max-width:380px;">${escapeHtml(desc)}</td>
+                        <td>${t.case_count} <span style="color:#888;font-size:11px;">(通过 ${t.success_count} / 红线 ${t.failure_count})</span></td>
+                        <td>${difficultyBadge(t.difficulty)}</td>
+                        <td style="color:#888;font-size:12px;">${lastRun}</td>
+                    </tr>`;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load benchmarks', e);
+                document.querySelector('#benchmarks-table tbody').innerHTML =
+                    '<tr><td colspan="5" style="text-align:center;color:#c00;padding:24px;">加载失败</td></tr>';
+            }
+        }
+
+        let currentBenchmarkId = null;
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function renderCriterionDetails(details) {
+            if (!details || details.length === 0) return '';
+            const methodBadge = (m) => {
+                const map = {
+                    'rule':    ['#3b82f6', '规则'],
+                    'llm':     ['#8b5cf6', 'LLM'],
+                    'hybrid':  ['#f59e0b', '混合'],
+                    'rule_fallback': ['#ef4444', '回退'],
+                };
+                const [bg, label] = map[m] || ['#6b7280', m || '?'];
+                if (m && m.startsWith('hybrid(')) return `<span style="font-size:10px;background:${'#f59e0b'};color:#fff;padding:1px 6px;border-radius:3px;">混合</span>`;
+                return `<span style="font-size:10px;background:${bg};color:#fff;padding:1px 6px;border-radius:3px;">${label}</span>`;
+            };
+            const items = details.map(d => {
+                // 三态：满足/未满足/部分满足
+                const score = d.score || 0;
+                let stateIcon, stateText, stateColor, borderColor, bgColor;
+                if (d.satisfied) {
+                    stateIcon = '✅';
+                    stateText = '满足';
+                    stateColor = '#166534';
+                    borderColor = '#22c55e';
+                    bgColor = '#f0fdf4';
+                } else if (score >= 0.4) {
+                    stateIcon = '⚠️';
+                    stateText = `部分满足 ${(score*100).toFixed(0)}%`;
+                    stateColor = '#92400e';
+                    borderColor = '#f59e0b';
+                    bgColor = '#fffbeb';
+                } else {
+                    stateIcon = '❌';
+                    stateText = `未满足 ${(score*100).toFixed(0)}%`;
+                    stateColor = '#991b1b';
+                    borderColor = '#ef4444';
+                    bgColor = '#fef2f2';
+                }
+                const evidenceHtml = (d.evidence || []).length
+                    ? `<div style="margin-top:6px;">${d.evidence.map(e => {
+                        // 突出 [t1] [t3] 这种轮次标签
+                        const m = e.match(/^(\[t\d+\])\s*(.*)$/);
+                        const turnTag = m ? `<span style="background:#1e293b;color:#fbbf24;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:10px;margin-right:6px;">${m[1]}</span>` : '';
+                        const body = m ? m[2] : e;
+                        return `<div style="font-size:11px;color:#475569;background:#fff;padding:4px 8px;border-left:2px solid #cbd5e1;border-radius:2px;margin-top:3px;font-family:monospace;">${turnTag}${escapeHtml(body)}</div>`;
+                    }).join('')}</div>`
+                    : '';
+                const errorHtml = d.error
+                    ? `<div style="font-size:11px;color:#ef4444;margin-top:4px;">⚠ ${escapeHtml(d.error)}</div>`
+                    : '';
+                return `
+                    <li style="margin-bottom:8px;padding:10px 12px;background:${bgColor};border-left:3px solid ${borderColor};border-radius:4px;">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span style="font-size:14px;">${stateIcon}</span>
+                            <strong style="color:${stateColor};">${escapeHtml(d.name)}</strong>
+                            <span style="font-size:10px;background:#fff;color:#6b7280;padding:1px 6px;border-radius:3px;border:1px solid #e5e7eb;">${escapeHtml(d.priority || '')}</span>
+                            ${methodBadge(d.method)}
+                            <span style="margin-left:auto;font-size:11px;font-weight:600;color:${stateColor};">${stateText}</span>
+                        </div>
+                        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">${escapeHtml(d.reasoning || '')}</div>
+                        ${evidenceHtml}
+                        ${errorHtml}
+                    </li>
+                `;
+            }).join('');
+            return `
+                <div style="margin-top:16px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">条件判定详情（每条说明判断方法、得分、证据）</div>
+                    <ul style="list-style:none;padding:0;margin:0;">${items}</ul>
+                </div>
             `;
         }
 
+        function renderBenchmarkDetail(task) {
+            const priorityColor = (p) => {
+                if (p === 'P0') return '#ef4444';
+                if (p === 'P1') return '#f59e0b';
+                if (p === 'P2') return '#3b82f6';
+                if (p === 'P3') return '#8b92a8';
+                return '#5a6078';
+            };
+            const successItems = (task.success_criteria || []).map(c => `
+                <li style="margin-bottom:8px;padding:10px 12px;background:#f0fdf4;border-left:3px solid #22c55e;border-radius:4px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong style="color:#166534;">${escapeHtml(c.name)}</strong>
+                        <span style="font-size:11px;background:${priorityColor(c.priority)};color:#fff;padding:2px 8px;border-radius:3px;">${escapeHtml(c.priority || 'P1')}</span>
+                    </div>
+                    <div style="font-size:12px;color:#555;margin-top:4px;line-height:1.5;">${escapeHtml(c.description || '')}</div>
+                </li>
+            `).join('');
+            const failureItems = (task.failure_criteria || []).map(c => `
+                <li style="margin-bottom:8px;padding:10px 12px;background:#fef2f2;border-left:3px solid #ef4444;border-radius:4px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong style="color:#991b1b;">${escapeHtml(c.name)}</strong>
+                        <span style="font-size:11px;background:${priorityColor(c.priority)};color:#fff;padding:2px 8px;border-radius:3px;">${escapeHtml(c.priority || 'P1')}</span>
+                    </div>
+                    <div style="font-size:12px;color:#555;margin-top:4px;line-height:1.5;">${escapeHtml(c.description || '')}</div>
+                </li>
+            `).join('');
+
+            const difficultyMap = { easy: ['#dcfce7', '#22c55e', '简单'], medium: ['#fef3c7', '#f59e0b', '中等'], hard: ['#fee2e2', '#ef4444', '困难'] };
+            const [bg, fg, label] = difficultyMap[task.difficulty] || difficultyMap.medium;
+
+            return `
+                <div class="card" style="margin-bottom:16px;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+                        <div style="flex:1;">
+                            <div style="font-size:20px;font-weight:700;margin-bottom:6px;">${escapeHtml(task.name)}</div>
+                            <div style="font-size:13px;color:#555;line-height:1.7;white-space:pre-wrap;">${escapeHtml(task.description || '—')}</div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+                            <span style="font-size:12px;background:${bg};color:${fg};padding:4px 10px;border-radius:12px;font-weight:600;">难度：${label}</span>
+                            <span style="font-size:11px;background:#f3f4f6;color:#6b7280;padding:3px 8px;border-radius:3px;">通过阈值：${(task.pass_threshold * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom:16px;">
+                    <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;color:#166534;">✓ 通过条件 · ${(task.success_criteria || []).length} 条</h3>
+                    ${successItems ? `<ul style="list-style:none;padding:0;margin:0;">${successItems}</ul>` : '<div style="color:#999;font-size:12px;">暂无</div>'}
+                </div>
+
+                <div class="card">
+                    <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;color:#991b1b;">✗ 失败红线 · ${(task.failure_criteria || []).length} 条</h3>
+                    ${failureItems ? `<ul style="list-style:none;padding:0;margin:0;">${failureItems}</ul>` : '<div style="color:#999;font-size:12px;">暂无</div>'}
+                </div>
+            `;
+        }
+
+        async function showBenchmarkDetail(taskId) {
+            currentBenchmarkId = taskId;
+            document.getElementById('benchmark-detail-title').textContent = `评测场景 · ${taskId}`;
+            document.getElementById('benchmark-detail-content').innerHTML = '<div style="color:#999;padding:24px;text-align:center;">加载中…</div>';
+            showView('benchmark-detail');
+            try {
+                const resp = await fetch(`/api/v1/benchmarks/${encodeURIComponent(taskId)}`);
+                if (!resp.ok) throw new Error(`详情加载失败: ${resp.status}`);
+                const detail = await resp.json();
+                benchmarkEditSnapshot = detail;
+                document.getElementById('benchmark-detail-content').innerHTML = renderBenchmarkDetail(detail);
+            } catch (e) {
+                document.getElementById('benchmark-detail-content').innerHTML = `<div style="color:#c00;padding:16px;">${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function goBackToBenchmarks() {
+            currentBenchmarkId = null;
+            showView('benchmarks');
+            loadBenchmarks();
+        }
+
         async function loadDatasets() {
-            document.querySelector('#datasets-table tbody').innerHTML = `
-                <tr><td>飞毛腿任务定义</td><td>Task Config</td><td>2</td><td>2026-05-31</td></tr>
-                <tr><td>Gold 对话库</td><td>Conversation</td><td>4</td><td>2026-05-31</td></tr>
-                <tr><td>用户画像模板</td><td>Persona</td><td>5</td><td>2026-05-31</td></tr>
+            try {
+                const resp = await fetch('/api/v1/assets/summary');
+                const data = await resp.json();
+                const tasks = data.tasks || [];
+                const golds = data.gold_conversations || [];
+                const personas = data.personas || [];
+
+                document.getElementById('ds-task-count').textContent = tasks.length;
+                document.getElementById('ds-task-preview').innerHTML = tasks.length
+                    ? tasks.slice(0, 3).map(t => `· ${escapeHtml(t.name)}`).join('<br/>')
+                    : '（暂无）';
+
+                document.getElementById('ds-gold-count').textContent = golds.length;
+                document.getElementById('ds-gold-preview').innerHTML = golds.length
+                    ? golds.slice(0, 3).map(g => `· ${escapeHtml(g.name)}`).join('<br/>')
+                    : '（暂无）';
+
+                document.getElementById('ds-persona-count').textContent = personas.length;
+                document.getElementById('ds-persona-preview').innerHTML = personas.length
+                    ? personas.slice(0, 5).map(p => `· ${escapeHtml(p.name)}`).join('<br/>')
+                    : '（暂无）';
+            } catch (e) {
+                console.error('Failed to load assets summary', e);
+            }
+        }
+
+        let currentGoldId = null;
+        let currentPersonaType = null;
+
+        function goBackToDatasets() {
+            currentGoldId = null;
+            currentPersonaType = null;
+            showView('datasets');
+            loadDatasets();
+        }
+
+        async function loadGoldDetail(conversationId) {
+            try {
+                const resp = await fetch('/api/v1/assets/summary');
+                const data = await resp.json();
+                const golds = data.gold_conversations || [];
+                const listEl = document.getElementById('gold-list');
+                listEl.innerHTML = golds.map(g => {
+                    const isActive = g.conversation_id === conversationId;
+                    return `
+                        <div class="card" style="cursor:pointer;${isActive ? 'border-color:#6366f1;background:#eef2ff;' : ''}" onclick="loadGoldDetail('${escapeHtml(g.conversation_id)}')">
+                            <div style="font-weight:600;margin-bottom:4px;">${escapeHtml(g.name)}</div>
+                            <div style="font-size:11px;color:#888;">${escapeHtml(g.task_id)} · ${g.turn_count} 轮</div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (!conversationId) {
+                    document.getElementById('gold-detail-content').innerHTML = '<div class="empty"><p>选择左侧任一对话查看详情</p></div>';
+                    return;
+                }
+                currentGoldId = conversationId;
+                document.getElementById('gold-detail-title').textContent = `标准对话 · ${conversationId}`;
+                const detailResp = await fetch(`/api/v1/assets/gold/${encodeURIComponent(conversationId)}`);
+                if (!detailResp.ok) throw new Error(`详情加载失败: ${detailResp.status}`);
+                const detail = await detailResp.json();
+                document.getElementById('gold-detail-content').innerHTML = renderGoldDetail(detail);
+            } catch (e) {
+                document.getElementById('gold-detail-content').innerHTML = `<div style="color:#c00;padding:16px;">${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function renderGoldDetail(g) {
+            const tags = (g.tags || []).map(t => `<span style="display:inline-block;background:#eef2ff;color:#4f46e5;padding:2px 8px;border-radius:3px;font-size:11px;margin-right:4px;">${escapeHtml(t)}</span>`).join('');
+            const turns = (g.turns || []).map(t => {
+                const isAgent = t.speaker === 'agent';
+                const align = isAgent ? 'flex-start' : 'flex-end';
+                const bg = isAgent ? '#f3f4f6' : '#eef2ff';
+                const fg = isAgent ? '#1f2937' : '#3730a3';
+                const label = isAgent ? 'Agent' : '用户';
+                const annos = t.annotations ? Object.entries(t.annotations).map(([k, v]) =>
+                    `<span style="font-size:10px;background:#fff;color:#6b7280;padding:1px 6px;border-radius:3px;border:1px solid #e5e7eb;margin-right:4px;">${escapeHtml(k)}${typeof v === 'string' ? ': ' + escapeHtml(v) : ''}</span>`
+                ).join('') : '';
+                return `
+                    <div style="display:flex;justify-content:${align};margin-bottom:12px;">
+                        <div style="max-width:70%;background:${bg};color:${fg};padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.6;">
+                            <div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">第 ${t.turn_number} 轮 · ${label}</div>
+                            <div>${escapeHtml(t.content || '')}</div>
+                            ${annos ? `<div style="margin-top:6px;">${annos}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="card" style="margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+                        <div>
+                            <div style="font-size:18px;font-weight:700;margin-bottom:4px;">${escapeHtml(g.name)}</div>
+                            <div style="font-size:12px;color:#888;">任务：${escapeHtml(g.task_id || '—')} · 用户类型：${escapeHtml(g.persona_type || '—')} · 对话轮数：${(g.turns || []).length}</div>
+                        </div>
+                        <div>${tags}</div>
+                    </div>
+                </div>
+                <div class="card">${turns || '<div class="empty">无对话内容</div>'}</div>
+            `;
+        }
+
+        async function loadPersonaDetail(personaType) {
+            try {
+                const resp = await fetch('/api/v1/assets/summary');
+                const data = await resp.json();
+                const personas = data.personas || [];
+                const listEl = document.getElementById('persona-list');
+                listEl.innerHTML = personas.map(p => {
+                    const isActive = p.persona_type === personaType;
+                    return `
+                        <div class="card" style="cursor:pointer;${isActive ? 'border-color:#6366f1;background:#eef2ff;' : ''}" onclick="loadPersonaDetail('${escapeHtml(p.persona_type)}')">
+                            <div style="font-weight:600;">${escapeHtml(p.name)}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (!personaType) {
+                    document.getElementById('persona-detail-content').innerHTML = '<div class="empty"><p>选择左侧任一画像查看详情</p></div>';
+                    return;
+                }
+                currentPersonaType = personaType;
+                document.getElementById('persona-detail-title').textContent = `用户画像 · ${personaType}`;
+                const detailResp = await fetch(`/api/v1/assets/personas/${encodeURIComponent(personaType)}`);
+                if (!detailResp.ok) throw new Error(`详情加载失败: ${detailResp.status}`);
+                const detail = await detailResp.json();
+                document.getElementById('persona-detail-content').innerHTML = renderPersonaDetail(detail);
+            } catch (e) {
+                document.getElementById('persona-detail-content').innerHTML = `<div style="color:#c00;padding:16px;">${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function renderPersonaDetail(p) {
+            const chips = (items) => (items || []).map(i =>
+                `<span style="display:inline-block;background:#f3f4f6;color:#374151;padding:4px 10px;border-radius:12px;font-size:12px;margin-right:6px;margin-bottom:6px;">${escapeHtml(i)}</span>`
+            ).join('') || '<span style="color:#999;font-size:12px;">—</span>';
+
+            const row = (label, content) => `
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:12px;color:#888;margin-bottom:6px;">${escapeHtml(label)}</div>
+                    <div style="font-size:13px;color:#1f2937;line-height:1.6;">${content}</div>
+                </div>
+            `;
+
+            return `
+                <div class="card" style="margin-bottom:16px;">
+                    <div style="font-size:20px;font-weight:700;margin-bottom:4px;">${escapeHtml(p.name)}</div>
+                    <div style="font-size:12px;color:#888;">类型：${escapeHtml(p.persona_type)} · 难度：${escapeHtml(p.difficulty_label || '—')}</div>
+                </div>
+                <div class="card">
+                    ${row('核心动机', escapeHtml(p.motivation || '—'))}
+                    ${row('当前状态', escapeHtml(p.current_status || '—'))}
+                    ${row('顾虑', chips(p.concerns))}
+                    ${row('目标', chips(p.goals))}
+                    ${row('说话习惯', chips(p.speaking_habits))}
+                    ${row('基础情绪', escapeHtml(p.emotional_baseline || '—'))}
+                    ${row('耐心等级', `<span style="font-weight:600;">${p.patience_level || 0} / 5</span>`)}
+                </div>
             `;
         }
 
@@ -1438,6 +2097,15 @@
                     const rate = m.success_rate || 0;
                     const avgScore = m.avg_score || 0;
                     const ci = m.ci_95_lower !== undefined ? `95% CI: [${m.ci_95_lower.toFixed(0)}%, ${m.ci_95_upper.toFixed(0)}%]` : '';
+                    const dims = [
+                        { k: 'avg_task_success', n: 'Task Success' },
+                        { k: 'avg_flow_adherence', n: 'Flow Adherence' },
+                        { k: 'avg_state_tracking', n: 'State Tracking' },
+                        { k: 'avg_compliance', n: 'Compliance' },
+                        { k: 'avg_recovery', n: 'Recovery' },
+                        { k: 'avg_naturalness', n: 'Naturalness' },
+                        { k: 'avg_efficiency', n: 'Efficiency' },
+                    ];
                     return `
                         <div style="padding:16px; background:var(--bg); border-radius:8px; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
@@ -1455,6 +2123,15 @@
                                 <div style="width:80px; text-align:right; font-weight:600;">${avgScore.toFixed(0)}</div>
                             </div>
                             ${ci ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${ci}</div>` : ''}
+                            <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-subtle);">
+                                <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">各维度平均分</div>
+                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+                                    ${dims.map(d => {
+                                        const v = m[d.k] || 0;
+                                        return `<div style="font-size:11px;"><span style="color:var(--text-muted);">${d.n}:</span> <span style="font-weight:600;">${v.toFixed(0)}</span></div>`;
+                                    }).join('')}
+                                </div>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1486,12 +2163,14 @@
                 const max = sorted[0]?.[1] || 1;
 
                 const failureTypeNames = {
-                    flow_deviation: '流程偏离',
-                    constraint_violation: '约束违规',
-                    intent_misunderstanding: '意图误解',
-                    recovery_failure: '恢复失败',
-                    early_termination: '过早终止',
-                    faq_mismatch: 'FAQ不匹配',
+                    intent_recognition_error: '意图识别错误',
+                    flow_violation: '流程违规',
+                    knowledge_error: '知识错误',
+                    compliance_violation: '合规违规',
+                    missing_information: '信息缺失',
+                    weak_retention: '挽留不足',
+                    premature_ending: '提前结束',
+                    other: '其他',
                 };
 
                 document.getElementById('failures-content').innerHTML = `
@@ -1692,6 +2371,354 @@
             loadSettings();
         }
 
+        // ============== 功能简介抽屉 ==============
+        const INTRO_DATA = [
+            { icon: '◈', name: '工作台',     who: '所有人',    whoColor: '#6366f1',
+              desc: '选择评测任务、启动一次新评测、看最近一次结果的总览页。' },
+            { icon: '▤', name: '评测记录',   who: '产品 / 算法', whoColor: '#8b5cf6',
+              desc: '所有历史评测的明细、对话回放、失败原因。复盘时来这里。' },
+            { icon: '◉', name: '评测场景',   who: '产品 / 老板', whoColor: '#22c55e',
+              desc: '看我们在测哪些业务场景、通过 / 失败的条件是什么。' },
+            { icon: '◫', name: '测试资产',   who: '产品 / 老板', whoColor: '#22c55e',
+              desc: '评测任务、标准对话、用户画像三类资产一览。' },
+            { icon: '◎', name: '画像分析',   who: '产品 / 算法', whoColor: '#8b5cf6',
+              desc: '不同用户类型上的评测通过率与分数分布。' },
+            { icon: '◐', name: '失败归因',   who: '产品 / 算法', whoColor: '#8b5cf6',
+              desc: '所有失败 case 的原因聚类、典型对话复盘。' },
+            { icon: '◔', name: '难度分析',   who: '产品 / 算法', whoColor: '#8b5cf6',
+              desc: '不同难度等级下的通过率与单次成本。' },
+            { icon: '◐', name: '失败热力图', who: '产品 / 算法', whoColor: '#8b5cf6',
+              desc: '场景 × 指标的失败密度热力图，一眼看到短板。' },
+            { icon: '◑', name: '成功路径',   who: '算法',       whoColor: '#f59e0b',
+              desc: '高分数 case 的对话轨迹聚类，提取成功模式。' },
+            { icon: '◓', name: 'A/B 实验对比', who: '算法',       whoColor: '#f59e0b',
+              desc: '同组场景下对比两个 task 的通过率 / 分数（同一业务不同 prompt 版本最常用）。' },
+            { icon: '⚙', name: 'Settings',   who: '工程师',     whoColor: '#ef4444',
+              desc: 'API Key、模型、价格等全局配置。' },
+        ];
+
+        function renderIntroList() {
+            const html = INTRO_DATA.map(item => `
+                <div style="padding:12px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:var(--bg-card);">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <span style="font-size:16px;">${item.icon}</span>
+                        <strong style="font-size:13px;">${escapeHtml(item.name)}</strong>
+                        <span style="font-size:10px;background:${item.whoColor}22;color:${item.whoColor};padding:2px 7px;border-radius:10px;margin-left:auto;">给 ${escapeHtml(item.who)} 看</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${escapeHtml(item.desc)}</div>
+                </div>
+            `).join('');
+            document.getElementById('intro-list').innerHTML = html;
+        }
+
+        function openIntroDrawer() {
+            renderIntroList();
+            document.getElementById('intro-drawer').style.display = 'block';
+            document.getElementById('intro-mask').style.display = 'block';
+        }
+
+        function closeIntroDrawer() {
+            document.getElementById('intro-drawer').style.display = 'none';
+            document.getElementById('intro-mask').style.display = 'none';
+        }
+
+        function toggleIntroDrawer() {
+            const isOpen = document.getElementById('intro-drawer').style.display === 'block';
+            if (isOpen) closeIntroDrawer(); else openIntroDrawer();
+        }
+
+        // ============== Excel / 题面导入抽屉 ==============
+        function openExcelImportDrawer() {
+            document.getElementById('excel-drawer').style.display = 'block';
+            document.getElementById('excel-mask').style.display = 'block';
+            document.getElementById('excel-import-result').innerHTML = '';
+        }
+        function closeExcelImportDrawer() {
+            document.getElementById('excel-drawer').style.display = 'none';
+            document.getElementById('excel-mask').style.display = 'none';
+        }
+
+        // File input -> read content into textarea
+        document.addEventListener('DOMContentLoaded', () => {
+            const fi = document.getElementById('excel-file');
+            if (fi) {
+                fi.addEventListener('change', async () => {
+                    const f = fi.files && fi.files[0];
+                    if (!f) return;
+                    const ta = document.getElementById('excel-text');
+                    try {
+                        if (f.name.match(/\.xlsx?$/i)) {
+                            // Browser can't parse xlsx; show a clear hint
+                            ta.value = `# 请改用 CLI 处理 .xlsx，或把 Excel 的内容复制粘贴进来：\n# python -m outbound_eval parse-instruction "${f.name}" --task-id <ID>\n\n`;
+                            ta.placeholder = 'xlsx 二进制文件浏览器无法直接读取，建议：\n1) 用上面的 CLI 命令；或\n2) 打开 Excel，全选复制后粘贴到这里';
+                        } else {
+                            ta.value = await f.text();
+                        }
+                    } catch (e) {
+                        ta.value = `# 读取失败: ${e}`;
+                    }
+                });
+            }
+        });
+
+        async function submitExcelImport() {
+            const taskId = (document.getElementById('excel-task-id').value || '').trim();
+            const text = (document.getElementById('excel-text').value || '').trim();
+            const doSave = document.getElementById('excel-save').checked;
+            const resultEl = document.getElementById('excel-import-result');
+
+            if (!taskId) { resultEl.innerHTML = '<div style="color:#ef4444;font-size:12px;">请填写任务 ID</div>'; return; }
+            if (!text) { resultEl.innerHTML = '<div style="color:#ef4444;font-size:12px;">请粘贴题面文本或上传 .txt/.md</div>'; return; }
+
+            resultEl.innerHTML = '<div style="color:var(--text-secondary);font-size:12px;">解析中…</div>';
+            try {
+                const resp = await fetch('/api/v1/instructions/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, task_id: taskId, save: doSave }),
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+
+                const flowSteps = data.parsed?.flow_steps?.length || 0;
+                const faqItems = data.parsed?.faq_items?.length || 0;
+                const errs = data.errors || [];
+                const errsHtml = errs.length
+                    ? `<div style="margin-top:6px;padding:6px 10px;background:#fef2f2;border-radius:4px;font-size:12px;color:#991b1b;">⚠ ${errs.join('; ')}</div>`
+                    : '';
+                const savedHtml = data.saved_path
+                    ? `<div style="margin-top:6px;font-size:11px;color:var(--text-muted);">已保存: <code>${data.saved_path}</code></div>`
+                    : '';
+
+                resultEl.innerHTML = `
+                    <div style="padding:10px 12px;background:#0f2a1a;border:1px solid #1a5a2e;border-radius:6px;">
+                        <div style="color:#86efac;font-weight:600;font-size:13px;">✓ 解析成功</div>
+                        <div style="margin-top:6px;font-size:12px;color:#cbd5e1;line-height:1.6;">
+                            <div>Flow Steps: <strong>${flowSteps}</strong></div>
+                            <div>FAQ Items: <strong>${faqItems}</strong></div>
+                            <div>Success Criteria: <strong>${data.task_yaml?.success_criteria?.length || 0}</strong></div>
+                            <div>Failure Criteria: <strong>${data.task_yaml?.failure_criteria?.length || 0}</strong></div>
+                        </div>
+                        ${savedHtml}
+                    </div>
+                    ${errsHtml}
+                `;
+                // Refresh benchmark list so the new task appears
+                loadBenchmarks();
+            } catch (e) {
+                resultEl.innerHTML = `<div style="color:#ef4444;font-size:12px;">解析失败: ${e.message}</div>`;
+            }
+        }
+
+        // Esc closes both drawers
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const intro = document.getElementById('intro-drawer');
+                const excel = document.getElementById('excel-drawer');
+                const bmEdit = document.getElementById('benchmark-edit-drawer');
+                if (intro && intro.style.display === 'block') closeIntroDrawer();
+                else if (excel && excel.style.display === 'block') closeExcelImportDrawer();
+                else if (bmEdit && bmEdit.style.display === 'block') closeBenchmarkEditDrawer();
+            }
+        });
+
+        // ============== Benchmark edit / delete ==============
+        let benchmarkEditSnapshot = null;
+
+        function openBenchmarkEditDrawer() {
+            if (!currentBenchmarkId) return;
+            const detail = benchmarkEditSnapshot;
+            if (!detail) {
+                alert('请先打开评测场景详情');
+                return;
+            }
+            document.getElementById('bm-edit-id').value = detail.task_id || '';
+            document.getElementById('bm-edit-name').value = detail.name || '';
+            document.getElementById('bm-edit-desc').value = detail.description || '';
+            const diff = (detail.difficulty || 'medium');
+            document.getElementById('bm-edit-difficulty').value = (typeof diff === 'string' ? diff : diff.value);
+            document.getElementById('bm-edit-threshold').value = detail.pass_threshold ?? 0.7;
+            // Load judge_weights (with defaults from engine)
+            const DEFAULT_W = {task_success:0.40, flow_adherence:0.20, state_tracking:0.10, compliance:0.10, recovery:0.00, naturalness:0.10, efficiency:0.10, weak_dimension_threshold:80.0};
+            const w = Object.assign({}, DEFAULT_W, detail.judge_weights || {});
+            for (const k of Object.keys(DEFAULT_W)) {
+                const el = document.getElementById('bm-w-' + k);
+                if (el) {
+                    el.value = w[k];
+                    el.addEventListener('input', updateWeightsSum, { once: false });
+                }
+            }
+            updateWeightsSum();
+            renderCriteriaEditor('bm-edit-success-list', detail.success_criteria || [], 'success');
+            renderCriteriaEditor('bm-edit-failure-list', detail.failure_criteria || [], 'failure');
+            document.getElementById('bm-edit-status').innerHTML = '';
+            document.getElementById('benchmark-edit-drawer').style.display = 'block';
+            document.getElementById('benchmark-edit-mask').style.display = 'block';
+        }
+
+        function updateWeightsSum() {
+            const keys = ['task_success','flow_adherence','state_tracking','compliance','recovery','naturalness','efficiency'];
+            let s = 0;
+            for (const k of keys) {
+                const v = parseFloat(document.getElementById('bm-w-' + k).value);
+                if (!isNaN(v)) s += v;
+            }
+            const sumEl = document.getElementById('bm-edit-weights-sum');
+            sumEl.textContent = `权重总和: ${s.toFixed(2)}${Math.abs(s - 1.0) > 0.05 ? ' （建议 1.00）' : ' ✓'}`;
+            sumEl.style.color = Math.abs(s - 1.0) > 0.05 ? 'var(--orange)' : 'var(--text-muted)';
+        }
+
+        function closeBenchmarkEditDrawer() {
+            document.getElementById('benchmark-edit-drawer').style.display = 'none';
+            document.getElementById('benchmark-edit-mask').style.display = 'none';
+        }
+
+        function renderCriteriaEditor(containerId, items, kind) {
+            const container = document.getElementById(containerId);
+            if (!items.length) {
+                container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:6px 0;">暂无</div>';
+                return;
+            }
+            container.innerHTML = items.map((c, i) => `
+                <div class="crit-edit-row" data-idx="${i}" data-kind="${kind}" style="display:grid;grid-template-columns:1fr 60px 28px;gap:6px;align-items:center;margin-bottom:6px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;">
+                    <div>
+                        <input class="form-input crit-name-input" value="${escapeHtml(c.name || '')}" placeholder="名称" style="font-size:12px;padding:4px 6px;margin-bottom:3px;" />
+                        <input class="form-input crit-desc-input" value="${escapeHtml(c.description || '')}" placeholder="说明" style="font-size:11px;padding:3px 6px;color:var(--text-secondary);" />
+                    </div>
+                    <select class="form-input crit-prio-input" style="font-size:11px;padding:3px 4px;">
+                        ${['P0','P1','P2','P3','P4'].map(p => `<option value="${p}" ${c.priority===p?'selected':''}>${p}</option>`).join('')}
+                    </select>
+                    <button class="btn btn-sm crit-remove" title="删除这一条" style="padding:2px 6px;color:#ef4444;">×</button>
+                </div>
+            `).join('');
+            container.querySelectorAll('.crit-remove').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    btn.closest('.crit-edit-row').remove();
+                };
+            });
+        }
+
+        function collectCriteriaFromEditor(containerId, originalItems, kind) {
+            const rows = document.querySelectorAll(`#${containerId} .crit-edit-row`);
+            const result = [];
+            rows.forEach((row, i) => {
+                const name = row.querySelector('.crit-name-input').value.trim();
+                const description = row.querySelector('.crit-desc-input').value.trim();
+                const priority = row.querySelector('.crit-prio-input').value;
+                const orig = originalItems[i] || {};
+                if (!name && !description) return;  // skip empty rows
+                result.push({
+                    condition_id: orig.condition_id || `auto_${kind}_${i}_${Date.now() % 10000}`,
+                    name: name || orig.name || '(未命名)',
+                    description: description,
+                    priority: priority,
+                    check_type: orig.check_type || 'rule',
+                    check_config: orig.check_config || {},
+                    ...(kind === 'success'
+                        ? { weight: orig.weight ?? 1.0 }
+                        : { penalty_weight: orig.penalty_weight ?? 1.0 }),
+                });
+            });
+            return result;
+        }
+
+        function addSuccessCriterionRow() {
+            const container = document.getElementById('bm-edit-success-list');
+            if (container.querySelector('.empty-note')) container.innerHTML = '';
+            const html = `
+                <div class="crit-edit-row" data-kind="success" style="display:grid;grid-template-columns:1fr 60px 28px;gap:6px;align-items:center;margin-bottom:6px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;">
+                    <div>
+                        <input class="form-input crit-name-input" placeholder="新条件名称" style="font-size:12px;padding:4px 6px;margin-bottom:3px;" />
+                        <input class="form-input crit-desc-input" placeholder="说明" style="font-size:11px;padding:3px 6px;color:var(--text-secondary);" />
+                    </div>
+                    <select class="form-input crit-prio-input" style="font-size:11px;padding:3px 4px;">
+                        <option value="P0">P0</option><option value="P1" selected>P1</option>
+                        <option value="P2">P2</option><option value="P3">P3</option><option value="P4">P4</option>
+                    </select>
+                    <button class="btn btn-sm crit-remove" style="padding:2px 6px;color:#ef4444;">×</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            const last = container.querySelectorAll('.crit-edit-row');
+            last[last.length - 1].querySelector('.crit-remove').onclick = (e) => {
+                e.preventDefault();
+                last[last.length - 1].remove();
+            };
+        }
+        function addFailureCriterionRow() { addSuccessCriterionRow(); /* same shape */ }
+
+        async function submitBenchmarkEdit() {
+            if (!currentBenchmarkId) return;
+            const statusEl = document.getElementById('bm-edit-status');
+            const origSuccess = (benchmarkEditSnapshot && benchmarkEditSnapshot.success_criteria) || [];
+            const origFailure = (benchmarkEditSnapshot && benchmarkEditSnapshot.failure_criteria) || [];
+            const payload = {
+                name: document.getElementById('bm-edit-name').value.trim(),
+                description: document.getElementById('bm-edit-desc').value.trim(),
+                difficulty: document.getElementById('bm-edit-difficulty').value,
+                pass_threshold: parseFloat(document.getElementById('bm-edit-threshold').value) || 0.7,
+                judge_weights: {
+                    task_success: parseFloat(document.getElementById('bm-w-task_success').value) || 0,
+                    flow_adherence: parseFloat(document.getElementById('bm-w-flow_adherence').value) || 0,
+                    state_tracking: parseFloat(document.getElementById('bm-w-state_tracking').value) || 0,
+                    compliance: parseFloat(document.getElementById('bm-w-compliance').value) || 0,
+                    recovery: parseFloat(document.getElementById('bm-w-recovery').value) || 0,
+                    naturalness: parseFloat(document.getElementById('bm-w-naturalness').value) || 0,
+                    efficiency: parseFloat(document.getElementById('bm-w-efficiency').value) || 0,
+                    weak_dimension_threshold: parseFloat(document.getElementById('bm-w-weak-threshold').value) || 80,
+                },
+                success_criteria: collectCriteriaFromEditor('bm-edit-success-list', origSuccess, 'success'),
+                failure_criteria: collectCriteriaFromEditor('bm-edit-failure-list', origFailure, 'failure'),
+            };
+            statusEl.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">保存中…</span>';
+            try {
+                const resp = await fetch(`/api/v1/benchmarks/${encodeURIComponent(currentBenchmarkId)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+                statusEl.innerHTML = '<span style="color:#22c55e;font-size:12px;">✓ 保存成功</span>';
+                setTimeout(() => {
+                    closeBenchmarkEditDrawer();
+                    // Re-open detail to refresh
+                    showBenchmarkDetail(currentBenchmarkId);
+                    loadBenchmarks();
+                }, 600);
+            } catch (e) {
+                statusEl.innerHTML = `<span style="color:#ef4444;font-size:12px;">✗ ${escapeHtml(e.message)}</span>`;
+            }
+        }
+
+        async function confirmDeleteBenchmark() {
+            if (!currentBenchmarkId) return;
+            const name = benchmarkEditSnapshot?.name || currentBenchmarkId;
+            if (!confirm(`确认删除任务「${name}」？\n\n该操作会删除 YAML 配置文件，不可撤销。`)) return;
+            try {
+                const resp = await fetch(`/api/v1/benchmarks/${encodeURIComponent(currentBenchmarkId)}`, {
+                    method: 'DELETE',
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+                currentBenchmarkId = null;
+                benchmarkEditSnapshot = null;
+                goBackToBenchmarks();
+            } catch (e) {
+                alert('删除失败: ' + e.message);
+            }
+        }
+
+        (function maybeAutoOpenIntro() {
+            try {
+                if (!localStorage.getItem('intro_seen')) {
+                    setTimeout(openIntroDrawer, 300);
+                    localStorage.setItem('intro_seen', '1');
+                }
+            } catch (e) { /* localStorage disabled — silently skip */ }
+        })();
+
         async function loadSettings() {
             try {
                 const resp = await fetch('/api/v1/settings');
@@ -1745,6 +2772,185 @@
                 msg.textContent = '保存失败: ' + e.message;
                 msg.style.color = 'var(--red)';
             }
+        }
+
+        // A/B Experiments
+        async function loadABExperiments() {
+            try {
+                // Populate task selectors
+                const taskResp = await fetch('/api/v1/tasks');
+                const taskData = await taskResp.json();
+                const tasks = taskData.tasks || [];
+                const opts = tasks.map(t => `<option value="${t.task_id}">${t.name}</option>`).join('');
+                document.getElementById('ab-baseline-task').innerHTML = opts;
+                document.getElementById('ab-candidate-task').innerHTML = opts;
+
+                // Load experiment list
+                const expResp = await fetch('/api/v1/experiments');
+                const expData = await expResp.json();
+                const experiments = expData.experiments || [];
+
+                if (experiments.length === 0) {
+                    document.getElementById('ab-experiments-list').innerHTML = '<div class="empty"><p>暂无实验记录</p></div>';
+                    return;
+                }
+
+                document.getElementById('ab-experiments-list').innerHTML = `
+                    <table class="table">
+                        <thead><tr><th>实验ID</th><th>版本</th><th>类型</th><th>结果数</th><th>时间</th><th>操作</th></tr></thead>
+                        <tbody>
+                            ${experiments.map(exp => {
+                                const isCross = exp.is_cross_business === true;
+                                const sameTask = exp.baseline_task_id && exp.candidate_task_id && exp.baseline_task_id === exp.candidate_task_id;
+                                const badge = isCross
+                                    ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">跨业务</span>'
+                                    : (sameTask ? '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">同业务</span>' : '<span style="background:#e5e7eb;color:#374151;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">—</span>');
+                                const versionLabel = `${exp.baseline_task_id || '?'} vs ${exp.candidate_task_id || '?'}`;
+                                return `
+                                <tr>
+                                    <td>${exp.experiment_id}</td>
+                                    <td>${versionLabel}</td>
+                                    <td>${badge}</td>
+                                    <td>${exp.result_count}</td>
+                                    <td>${exp.timestamp_ms ? new Date(exp.timestamp_ms).toLocaleString() : (exp.timestamp ? new Date(exp.timestamp).toLocaleString() : '')}</td>
+                                    <td><button class="btn btn-sm" onclick="loadABComparison('${exp.experiment_id}')">查看</button></td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (e) { console.error(e); }
+        }
+
+        async function startABExperiment() {
+            const baseline = document.getElementById('ab-baseline-task').value;
+            const candidate = document.getElementById('ab-candidate-task').value;
+            const scenarios = parseInt(document.getElementById('ab-scenarios').value) || 5;
+            const levels = Array.from(document.querySelectorAll('.ab-diff-cb:checked')).map(cb => cb.value);
+
+            if (!baseline || !candidate) {
+                alert('请选择基线和候选任务');
+                return;
+            }
+            if (levels.length === 0) {
+                alert('请至少勾选一个难度档');
+                return;
+            }
+            if (baseline === candidate && levels.length > 1) {
+                if (!confirm('检测到同业务多档切片模式（会跑 ' + levels.length + ' 档 × 2 边 = ' + (levels.length * 2 * scenarios) + ' 个 case），确认继续？')) {
+                    return;
+                }
+            }
+
+            try {
+                const params = new URLSearchParams();
+                params.append('baseline_task_id', baseline);
+                params.append('candidate_task_id', candidate);
+                params.append('scenarios', String(scenarios));
+                levels.forEach(l => params.append('difficulty_levels', l));
+                const resp = await fetch(`/api/v1/experiments/run?${params.toString()}`, {
+                    method: 'POST',
+                });
+                const data = await resp.json();
+                if (data.status === 'started') {
+                    alert(`A/B 实验已启动: ${data.experiment_id}\n难度切片: ${(data.difficulty_levels || []).join(', ')}\n每档场景数: ${data.scenarios_per_level}`);
+                    loadABExperiments();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadABComparison(experimentId) {
+            try {
+                const resp = await fetch(`/api/v1/experiments/${experimentId}`);
+                const data = await resp.json();
+                const comparison = data.comparison?.results?.[0] || {};
+                const baseline = data.baseline?.results?.[0] || {};
+                const candidate = data.candidate?.results?.[0] || {};
+
+                document.getElementById('ab-comparison-card').style.display = 'block';
+
+                // Build per-difficulty matrix (v2) or fall back to legacy view
+                const perDiff = comparison.per_difficulty || {};
+                const levels = comparison.difficulty_levels || Object.keys(perDiff);
+                const isCrossBiz = !!comparison.is_cross_business;
+
+                let matrixHtml = '';
+                if (Object.keys(perDiff).length > 0) {
+                    const rows = levels.map(lvl => {
+                        const d = perDiff[lvl] || {};
+                        const sigBadge = d.is_significant
+                            ? '<span style="color:var(--green);font-weight:700;">✓</span>'
+                            : '<span style="color:var(--text-muted);">—</span>';
+                        return `<tr>
+                            <td><strong>${lvl}</strong></td>
+                            <td>${(d.baseline_success_rate ?? 0).toFixed(1)}%</td>
+                            <td>${(d.candidate_success_rate ?? 0).toFixed(1)}%</td>
+                            <td style="color:${(d.success_rate_delta || 0) >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600;">
+                                ${(d.success_rate_delta >= 0 ? '+' : '') + (d.success_rate_delta || 0).toFixed(2)}%
+                            </td>
+                            <td>${(d.p_value ?? 1).toFixed(3)}</td>
+                            <td>${sigBadge}</td>
+                            <td style="color:var(--text-muted);font-size:12px;">n=${d.sample_size || 0}</td>
+                        </tr>`;
+                    }).join('');
+
+                    // Overall row
+                    const overallRow = `<tr style="background:var(--bg-hover);">
+                        <td><strong>整体</strong></td>
+                        <td><strong>${(baseline.success_rate || 0).toFixed(1)}%</strong></td>
+                        <td><strong>${(candidate.success_rate || 0).toFixed(1)}%</strong></td>
+                        <td style="color:${(comparison.success_rate_delta || 0) >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:700;">
+                            ${(comparison.success_rate_delta >= 0 ? '+' : '') + (comparison.success_rate_delta || 0).toFixed(2)}%
+                        </td>
+                        <td>${(comparison.p_value || 1).toFixed(3)}</td>
+                        <td>${comparison.is_significant ? '<span style="color:var(--green);font-weight:700;">✓</span>' : '<span style="color:var(--text-muted);">—</span>'}</td>
+                        <td style="color:var(--text-muted);font-size:12px;">—</td>
+                    </tr>`;
+
+                    matrixHtml = `
+                        ${isCrossBiz ? '<div style="background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px;">⚠ 跨业务对比，数值仅作参考，不具统计可比性</div>' : ''}
+                        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">难度 × 版本 对比矩阵</div>
+                        <table class="table" style="font-size:12px;">
+                            <thead><tr><th>难度档</th><th>基线成功率</th><th>候选成功率</th><th>Δ%</th><th>p 值</th><th>显著</th><th>样本</th></tr></thead>
+                            <tbody>${rows}${overallRow}</tbody>
+                        </table>
+                    `;
+                } else {
+                    // Legacy: no per_difficulty, show old single-row view
+                    matrixHtml = `
+                        <div style="background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px;">该实验为旧版数据，未按难度切片展示</div>
+                        <div class="grid grid-2" style="gap:16px;">
+                            <div>
+                                <div style="font-size:14px; font-weight:600; margin-bottom:12px;">成功率对比</div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                    <span style="width:80px;">基线</span>
+                                    <div class="progress-bar" style="flex:1;"><div class="progress-fill blue" style="width:${(baseline.success_rate || 0)}%"></div></div>
+                                    <span>${(baseline.success_rate || 0).toFixed(1)}%</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="width:80px;">候选</span>
+                                    <div class="progress-bar" style="flex:1;"><div class="progress-fill ${(comparison.success_rate_delta || 0) > 0 ? 'green' : 'red'}" style="width:${(candidate.success_rate || 0)}%"></div></div>
+                                    <span>${(candidate.success_rate || 0).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600; margin-bottom:12px;">统计显著性</div>
+                                <div style="font-size:13px; line-height:1.8;">
+                                    <div>Delta: <span style="font-weight:600;">${(comparison.success_rate_delta || 0).toFixed(2)}%</span></div>
+                                    <div>p-value: <span style="font-weight:600;">${(comparison.p_value || 1).toFixed(3)}</span></div>
+                                    <div>显著: <span style="font-weight:600; color:${comparison.is_significant ? 'var(--green)' : 'var(--text-muted)'}">${comparison.is_significant ? '是' : '否'}</span></div>
+                                    <div>建议: <span style="font-weight:600;">${comparison.recommendation || 'N/A'}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('ab-comparison-content').innerHTML = `
+                    ${matrixHtml}
+                    ${comparison.reasoning ? `<div style="margin-top:12px; padding:10px; background:var(--bg-hover); border-radius:6px; font-size:12px;">${comparison.reasoning}</div>` : ''}
+                `;
+            } catch (e) { console.error(e); }
         }
 
         // Init

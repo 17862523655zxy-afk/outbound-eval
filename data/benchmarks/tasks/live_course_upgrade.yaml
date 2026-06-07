@@ -12,6 +12,7 @@ success_criteria:
   - condition_id: "identity_confirmed"
     name: "身份确认"
     description: "确认对方是机构负责人"
+    priority: "P0"
     check_type: "rule"
     check_config:
       agent_keywords: ["负责人", "校长"]
@@ -21,6 +22,7 @@ success_criteria:
   - condition_id: "upgrade_announced"
     name: "升级内容传达"
     description: "告知新增了低延迟直播选项"
+    priority: "P0"
     check_type: "rule"
     check_config:
       required_keywords: ["低延迟", "直播", "新增", "升级"]
@@ -29,6 +31,7 @@ success_criteria:
   - condition_id: "option_difference"
     name: "选项差异说明"
     description: "说明标准直播和低延迟直播的区别"
+    priority: "P1"
     check_type: "hybrid"
     check_config:
       standard_keywords: ["标准", "5秒", "大班"]
@@ -38,6 +41,7 @@ success_criteria:
   - condition_id: "price_info"
     name: "价格说明"
     description: "说明低延迟直播费用略高"
+    priority: "P2"
     check_type: "rule"
     check_config:
       price_keywords: ["费用", "价格", "贵"]
@@ -47,12 +51,52 @@ success_criteria:
   - condition_id: "next_steps"
     name: "后续步骤说明"
     description: "说明如何使用或配置新功能"
+    priority: "P2"
     check_type: "rule"
     check_config:
       next_step_keywords: ["明天", "查看", "配置", "Web"]
     weight: 0.6
 
+  - condition_id: "call_ended_properly"
+    name: "正确结束通话"
+    description: "以礼貌方式结束通话"
+    priority: "P1"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["再见", "感谢", "帮助"]
+      min_hits: 1
+    weight: 0.5
+
 pass_threshold: 0.7
+
+failure_criteria:
+  - condition_id: "no_upgrade_info"
+    name: "未告知升级内容"
+    description: "Agent 未告知新增低延迟直播功能"
+    priority: "P0"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["低延迟", "直播"]
+    penalty_weight: 2.0
+
+  - condition_id: "no_difference_explanation"
+    name: "未说明选项差异"
+    description: "Agent 未说明标准直播和低延迟直播的区别"
+    priority: "P1"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["标准", "低延迟"]
+    penalty_weight: 1.0
+
+  - condition_id: "no_call_ending"
+    name: "未结束通话"
+    description: "Agent 未主动结束通话"
+    priority: "P1"
+    check_type: "rule"
+    check_config:
+      required_keywords: ["再见", "感谢", "拜拜"]
+      min_hits: 1
+    penalty_weight: 1.0
 
 expected_outcome:
   task_completed: true

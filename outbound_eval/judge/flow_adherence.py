@@ -32,7 +32,7 @@ class FlowAdherenceResult(BaseModel):
 class FlowAdherenceJudge:
     """Evaluates flow adherence."""
 
-    def __init__(self, flow_steps: list[dict], critical_step_ids: Optional[list[str]] = None):
+    def __init__(self, flow_steps: list[dict[str, object]], critical_step_ids: Optional[list[str]] = None):
         """Initialize the judge.
 
         Args:
@@ -43,7 +43,7 @@ class FlowAdherenceJudge:
         self.critical_step_ids = critical_step_ids or []
 
     def evaluate(
-        self, dialogue_history: list[dict]
+        self, dialogue_history: list[dict[str, object]]
     ) -> FlowAdherenceResult:
         """Evaluate flow adherence.
 
@@ -94,7 +94,7 @@ class FlowAdherenceJudge:
         )
 
     def _evaluate_step(
-        self, step: dict, dialogue_history: list[dict]
+        self, step: dict[str, object], dialogue_history: list[dict[str, object]]
     ) -> FlowStepStatus:
         """Evaluate a single flow step.
 

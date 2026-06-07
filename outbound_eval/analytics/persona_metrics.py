@@ -16,6 +16,14 @@ class PersonaMetrics(BaseModel):
     ci_95_lower: float = 0.0
     ci_95_upper: float = 0.0
     failure_distribution: dict[str, int] = Field(default_factory=dict)
+    # Per-dimension average scores
+    avg_task_success: float = 0.0
+    avg_flow_adherence: float = 0.0
+    avg_state_tracking: float = 0.0
+    avg_compliance: float = 0.0
+    avg_recovery: float = 0.0
+    avg_naturalness: float = 0.0
+    avg_efficiency: float = 0.0
 
 
 class PersonaMetricsReport(BaseModel):
@@ -75,6 +83,15 @@ class PersonaMetricsAnalyzer:
                     for reason in r.get("failure_reasons", []):
                         failure_dist[reason] = failure_dist.get(reason, 0) + 1
 
+            # Per-dimension averages
+            task_s = [r.get("task_success", 0) for r in results]
+            flow_a = [r.get("flow_adherence", 0) for r in results]
+            state_t = [r.get("state_tracking", 0) for r in results]
+            compl = [r.get("compliance", 0) for r in results]
+            recov = [r.get("recovery", 0) for r in results]
+            natur = [r.get("naturalness", 0) for r in results]
+            effic = [r.get("efficiency", 0) for r in results]
+
             metrics = PersonaMetrics(
                 persona_type=persona_type,
                 total_cases=total,
@@ -84,6 +101,13 @@ class PersonaMetricsAnalyzer:
                 ci_95_lower=ci_result.ci_95_lower * 100,
                 ci_95_upper=ci_result.ci_95_upper * 100,
                 failure_distribution=failure_dist,
+                avg_task_success=sum(task_s) / len(task_s) if task_s else 0.0,
+                avg_flow_adherence=sum(flow_a) / len(flow_a) if flow_a else 0.0,
+                avg_state_tracking=sum(state_t) / len(state_t) if state_t else 0.0,
+                avg_compliance=sum(compl) / len(compl) if compl else 0.0,
+                avg_recovery=sum(recov) / len(recov) if recov else 0.0,
+                avg_naturalness=sum(natur) / len(natur) if natur else 0.0,
+                avg_efficiency=sum(effic) / len(effic) if effic else 0.0,
             )
             persona_metrics.append(metrics)
             success_rates[persona_type] = metrics.success_rate

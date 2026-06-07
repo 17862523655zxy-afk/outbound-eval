@@ -1,14 +1,75 @@
 """Main judge engine combining all evaluation metrics."""
 
-from typing import Optional, Any
+from typing import TYPE_CHECKING, cast
 from pydantic import BaseModel, Field
-from outbound_eval.dataset.task import EvaluationTask, SuccessCondition
+from outbound_eval.dataset.task import EvaluationTask, SuccessCondition, FailureCondition
 from outbound_eval.judge.flow_adherence import FlowAdherenceJudge, FlowAdherenceResult
 from outbound_eval.judge.state_tracking import StateTrackingJudge, StateTrackingResult
 from outbound_eval.judge.rule_judge import RuleJudge
 from outbound_eval.judge.llm_judge import LLMJudge
-from outbound_eval.judge.hybrid_judge import HybridJudge, HybridJudgeResult
+from outbound_eval.judge.hybrid_judge import HybridJudge
 from outbound_eval.judge.efficiency import EfficiencyJudge, EfficiencyMetrics
+from outbound_eval.gold.comparator import GoldComparator, GoldComparisonResult
+
+if TYPE_CHECKING:
+    from outbound_eval.agent.llm.base import LLMClient
+
+
+# A single turn in a dialogue history.
+DialogueTurn = dict[str, object]
+
+
+class CriterionDetail(BaseModel):
+    """Per-condition explainability record.
+
+    Populated for every success/failure condition evaluated, regardless of
+    whether the check is rule, LLM, or hybrid. Surfaced to the dashboard
+    so each score is traceable back to a concrete method + reasoning +
+    evidence quote.
+    """
+
+    condition_id: str
+    name: str
+    priority: str
+    check_type: str
+    satisfied: bool
+    score: float = Field(description="0.0-1.0 normalized")
+    method: str  # "rule" | "llm" | "hybrid" | "rule_fallback"
+    reasoning: str = ""
+    evidence: list[str] = Field(default_factory=list)
+    error: str | None = None
+
+
+class JudgeWeights(BaseModel):
+    """Configurable weights for judge dimensions."""
+
+    task_success: float = 0.40
+    flow_adherence: float = 0.20
+    state_tracking: float = 0.10
+    compliance: float = 0.10
+    recovery: float = 0.00
+    naturalness: float = 0.10
+    efficiency: float = 0.10
+
+    # v2: thresholds for triggering improvement suggestions (configurable)
+    weak_dimension_threshold: float = Field(
+        default=80.0,
+        description="当某维度低于此值时触发改进建议（0-100）",
+    )
+
+    @classmethod
+    def from_dict(cls, d: dict[str, float]) -> "JudgeWeights":
+        """Create from dict with fallbacks to defaults."""
+        return cls(
+            task_success=cast(float, d.get("task_success", 0.40)),
+            flow_adherence=cast(float, d.get("flow_adherence", 0.20)),
+            state_tracking=cast(float, d.get("state_tracking", 0.10)),
+            compliance=cast(float, d.get("compliance", 0.10)),
+            recovery=cast(float, d.get("recovery", 0.00)),
+            naturalness=cast(float, d.get("naturalness", 0.10)),
+            efficiency=cast(float, d.get("efficiency", 0.10)),
+            weak_dimension_threshold=cast(float, d.get("weak_dimension_threshold", 80.0)),
+        )
 
 
 class JudgeResult(BaseModel):
@@ -27,13 +88,24 @@ class JudgeResult(BaseModel):
     efficiency: float = 0.0
 
     # Detailed results
-    flow_adherence_detail: Optional[FlowAdherenceResult] = None
-    state_tracking_detail: Optional[StateTrackingResult] = None
-    efficiency_detail: Optional[EfficiencyMetrics] = None
+    flow_adherence_detail: FlowAdherenceResult | None = None
+    state_tracking_detail: StateTrackingResult | None = None
+    efficiency_detail: EfficiencyMetrics | None = None
+
+    # State tracking path
+    state_path: list[str] = Field(default_factory=list)
 
     # Overall score
     overall_score: float = 0.0
     passed: bool = False
+
+    # P0 tracking
+    p0_satisfied: bool = True
+    p0_total: int = 0
+    p0_passed: int = 0
+
+    # Failure tracking
+    failure_violations: list[str] = Field(default_factory=list)
 
     # Judge metadata
     judge_mode: str = "hybrid"
@@ -43,29 +115,43 @@ class JudgeResult(BaseModel):
     failure_reasons: list[str] = Field(default_factory=list)
     improvement_suggestions: list[str] = Field(default_factory=list)
 
+    # Per-condition explainability
+    criterion_details: list[CriterionDetail] = Field(default_factory=list)
+
+    # Gold conversation comparison
+    gold_comparison: GoldComparisonResult | None = None
+
 
 class JudgeEngine:
     """Main evaluation engine coordinating all judges."""
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(
+        self,
+        config: dict[str, object] | None = None,
+        llm_client: "LLMClient | None" = None,
+    ):
         """Initialize the engine.
 
         Args:
             config: Judge configuration
+            llm_client: Optional LLM client; when provided, ``LLMJudge`` is
+                wired with it so ``check_type: llm/hybrid`` actually call
+                the model instead of returning a fixed 70% placeholder.
         """
-        self.config = config or {}
-        self.rule_judge = RuleJudge(self.config.get("constraints", {}))
-        self.llm_judge = LLMJudge()
-        self.hybrid_judge = HybridJudge(self.rule_judge, self.llm_judge)
-        self.efficiency_judge = EfficiencyJudge()
-        self.flow_judge: Optional[FlowAdherenceJudge] = None
-        self.state_judge = StateTrackingJudge()
+        self.config: dict[str, object] = config or {}
+        self.rule_judge: RuleJudge = RuleJudge(cast(dict[str, object], self.config.get("constraints", {})))
+        self.llm_judge: LLMJudge = LLMJudge(llm_client=llm_client)
+        self.hybrid_judge: HybridJudge = HybridJudge(self.rule_judge, self.llm_judge)
+        self.efficiency_judge: EfficiencyJudge = EfficiencyJudge()
+        self.flow_judge: FlowAdherenceJudge | None = None
+        self.state_judge: StateTrackingJudge = StateTrackingJudge()
+        self.gold_comparator: GoldComparator = GoldComparator()
 
     def evaluate(
         self,
         task: EvaluationTask,
-        dialogue_history: list[dict],
-        agent_state: dict,
+        dialogue_history: list[DialogueTurn],
+        agent_state: dict[str, object],
         total_tokens: int = 0,
     ) -> JudgeResult:
         """Evaluate a conversation.
@@ -84,11 +170,13 @@ class JudgeEngine:
         # Initialize flow judge if flow is defined
         # Convert SuccessCondition to dict for FlowAdherenceJudge
         if task.success_criteria:
-            flow_steps = [
+            flow_steps: list[dict[str, object]] = [
                 {
                     "id": c.condition_id,
                     "description": c.name,
-                    "expected_keywords": c.check_config.get("required_keywords", []) if isinstance(c.check_config, dict) else [],
+                    "expected_keywords": list(c.check_config.get("required_keywords", []))
+                    if isinstance(c.check_config.get("required_keywords"), list)
+                    else [],
                 }
                 for c in task.success_criteria
             ]
@@ -96,7 +184,7 @@ class JudgeEngine:
 
         # 1. Task Success - evaluate success conditions
         result.task_success = self._evaluate_task_success(
-            task.success_criteria, dialogue_history
+            task.success_criteria, dialogue_history, result
         )
 
         # 2. Flow Adherence
@@ -111,6 +199,7 @@ class JudgeEngine:
         state_result = self.state_judge.evaluate()
         result.state_tracking = state_result.consistency_score
         result.state_tracking_detail = state_result
+        result.state_path = self.state_judge.extract_state_path(dialogue_history)
 
         # 4. Compliance - Rule-based
         compliance_result = self.rule_judge.evaluate_conversation(dialogue_history)
@@ -129,16 +218,19 @@ class JudgeEngine:
         result.efficiency = eff_result.efficiency_score
         result.efficiency_detail = eff_result
 
-        # Calculate overall score
-        weights = {
-            "task_success": 0.30,
-            "flow_adherence": 0.20,
-            "state_tracking": 0.10,
-            "compliance": 0.15,
-            "recovery": 0.10,
-            "naturalness": 0.10,
-            "efficiency": 0.05,
-        }
+        # 8. Check failure criteria
+        result.failure_violations = self._evaluate_failure_criteria(
+            task.failure_criteria, dialogue_history
+        )
+
+        # Calculate overall score using configurable weights
+        if isinstance(task.judge_weights, JudgeWeights):
+            weights = task.judge_weights
+        elif task.judge_weights:
+            weights = JudgeWeights.from_dict(task.judge_weights)
+        else:
+            weights = JudgeWeights()
+        weak_th = weights.weak_dimension_threshold
 
         scores = {
             "task_success": result.task_success,
@@ -150,30 +242,48 @@ class JudgeEngine:
             "efficiency": result.efficiency,
         }
 
-        result.overall_score = sum(scores[k] * v for k, v in weights.items())
+        result.overall_score = sum(
+            scores[k] * getattr(weights, k) for k in scores
+        )
 
-        # Determine pass/fail (relaxed thresholds for realistic agent performance)
+        # Determine pass/fail
+        # P0 conditions must ALL be satisfied
+        # No P0-level failure criteria violations
+        # Plus existing metric thresholds
         result.passed = (
-            result.task_success >= task.pass_threshold * 100
+            result.p0_satisfied
+            and len(result.failure_violations) == 0
+            and result.task_success >= task.pass_threshold * 100
             and result.flow_adherence >= 45.0
             and result.compliance >= 55.0
         )
 
         # Generate failure reasons
-        self._generate_failure_reasons(result, task)
+        self._generate_failure_reasons(result, task, weak_th)
+
+        # Gold conversation comparison (best-effort, never raises)
+        try:
+            result.gold_comparison = self.gold_comparator.find_and_compare(
+                dialogue_history,
+                task.task_id,
+            )
+        except Exception:
+            result.gold_comparison = None
 
         return result
 
     def _evaluate_task_success(
         self,
         success_criteria: list[SuccessCondition],
-        dialogue_history: list[dict],
+        dialogue_history: list[DialogueTurn],
+        result: JudgeResult | None = None,
     ) -> float:
-        """Evaluate task success conditions.
+        """Evaluate task success conditions with P0 priority logic.
 
         Args:
             success_criteria: List of success conditions
             dialogue_history: Conversation history
+            result: Optional JudgeResult to populate p0_satisfied and criterion_details
 
         Returns:
             Success score (0-100)
@@ -182,57 +292,251 @@ class JudgeEngine:
             return 75.0  # Default if no criteria
 
         agent_messages = " ".join(
-            t["content"] for t in dialogue_history if t["role"] == "agent"
+            cast(str, t["content"])
+            for t in dialogue_history
+            if t.get("role") == "agent"
         )
         user_messages = " ".join(
-            t["content"] for t in dialogue_history if t["role"] == "user"
+            cast(str, t["content"])
+            for t in dialogue_history
+            if t.get("role") == "user"
         )
 
-        satisfied = 0
+        satisfied = 0.0
         total_weight = 0.0
+        p0_satisfied = True
+        p0_total = 0
+        p0_passed = 0
+        details: list[CriterionDetail] = []
 
         for condition in success_criteria:
-            total_weight += condition.weight
-            
-            # Get check_config as dict
-            if hasattr(condition, 'model_dump'):
-                config = condition.model_dump().get('check_config', {})
-            else:
-                config = condition.check_config if isinstance(condition, dict) else {}
+            priority = condition.priority
+            weight = condition.weight
+            total_weight += weight
 
-            check_type = condition.check_type if hasattr(condition, 'check_type') else condition.get('check_type')
+            # ``check_config`` is a typed dict[str, object]; the values we use
+            # are all string lists, so cast through ``object`` at the boundary.
+            config: dict[str, object] = condition.check_config
+            required_keywords_raw = config.get("required_keywords", [])
+            required_keywords: list[str] = (
+                [str(x) for x in required_keywords_raw]
+                if isinstance(required_keywords_raw, list)
+                else []
+            )
+            check_type = condition.check_type
+
+            method_used = "rule"
+            reasoning = ""
+            evidence: list[str] = []
+            normalized_score = 0.0  # 0.0~1.0
+            error_msg: str | None = None
 
             if check_type == "rule":
-                # Rule-based check
-                required_keywords = config.get("required_keywords", []) if isinstance(config, dict) else []
+                # Rule-based check with continuous scoring (not 0/100 binary)
                 if required_keywords:
-                    if all(kw in agent_messages for kw in required_keywords):
-                        satisfied += condition.weight
+                    # Per-keyword match → continuous score: N/M (was binary 0/1)
+                    hit = [kw for kw in required_keywords if kw in agent_messages]
+                    miss = [kw for kw in required_keywords if kw not in agent_messages]
+                    total = len(required_keywords)
+                    matched = len(hit)
+                    normalized_score = (matched / total) if total > 0 else 0.0
+                    method_used = "rule"
+                    reasoning = (
+                        f"规则关键词命中 {matched}/{total}（{hit}）；缺失 {miss}；得分 {normalized_score*100:.1f}"
+                    )
+                    evidence = [
+                        f"[t{i+1}] {(cast(str, t.get('content', '')) or '')[:80].replace(chr(10), ' ')}"
+                        for i, t in enumerate(dialogue_history)
+                        if t.get("role") == "agent"
+                    ][:3]
+                    if miss:
+                        evidence.append(f"❌ 缺失关键词: {' / '.join(miss)}")
+                else:
+                    # No rule config → fall back to llm if available
+                    eval_result = self.llm_judge.evaluate_condition(
+                        dialogue_history,
+                        condition.name,
+                        condition.description,
+                        priority,
+                    )
+                    method_used = eval_result.method
+                    normalized_score = eval_result.score
+                    reasoning = eval_result.reasoning or (
+                        "无规则配置，LLM 评估" if eval_result.method == "llm"
+                        else "无规则配置且 LLM 不可用"
+                    )
+                    evidence = list(eval_result.evidence)
+                    error_msg = eval_result.error
 
             elif check_type == "llm":
-                # LLM-based check (simplified)
-                satisfied += condition.weight * 0.7
+                # Real LLM-based check
+                eval_result = self.llm_judge.evaluate_condition(
+                    dialogue_history,
+                    condition.name,
+                    condition.description,
+                    priority,
+                )
+                method_used = eval_result.method
+                normalized_score = eval_result.score
+                reasoning = eval_result.reasoning
+                evidence = list(eval_result.evidence)
+                error_msg = eval_result.error
 
             elif check_type == "hybrid":
-                # Hybrid check
-                confirm_patterns = config.get("confirm_patterns", []) if isinstance(config, dict) else []
-                reject_patterns = config.get("reject_patterns", []) if isinstance(config, dict) else []
+                # Rule first: if any confirm_pattern or required_keyword matches, give rule half.
+                confirm_patterns_raw = config.get("confirm_patterns", [])
+                reject_patterns_raw = config.get("reject_patterns", [])
+                confirm_patterns: list[str] = (
+                    [str(x) for x in confirm_patterns_raw]
+                    if isinstance(confirm_patterns_raw, list)
+                    else []
+                )
+                reject_patterns: list[str] = (
+                    [str(x) for x in reject_patterns_raw]
+                    if isinstance(reject_patterns_raw, list)
+                    else []
+                )
 
-                if confirm_patterns and any(
-                    kw in user_messages for kw in confirm_patterns
-                ):
-                    satisfied += condition.weight
-                elif reject_patterns and any(
-                    kw in user_messages for kw in reject_patterns
-                ):
-                    satisfied += condition.weight * 0.5
+                rule_hit_confirm = bool(confirm_patterns) and any(
+                    p in user_messages for p in confirm_patterns
+                )
+                rule_hit_reject = bool(reject_patterns) and any(
+                    p in user_messages for p in reject_patterns
+                )
+                rule_hit_keyword = bool(required_keywords) and all(
+                    kw in agent_messages for kw in required_keywords
+                )
+
+                if rule_hit_confirm or rule_hit_keyword:
+                    rule_score = 1.0
+                elif rule_hit_reject:
+                    rule_score = 0.5  # partial credit for explicit rejection
+                else:
+                    rule_score = 0.0
+
+                # Always consult LLM for the other half
+                eval_result = self.llm_judge.evaluate_condition(
+                    dialogue_history,
+                    condition.name,
+                    condition.description,
+                    priority,
+                )
+                method_used = f"hybrid(rule={rule_score:.1f},llm={eval_result.method})"
+                normalized_score = 0.5 * rule_score + 0.5 * eval_result.score
+                reasoning = f"rule={rule_score:.1f} | llm: {eval_result.reasoning}"
+                evidence = list(eval_result.evidence)
+                error_msg = eval_result.error
+
+            else:
+                # Unknown check_type → rule with required_keywords (continuous score)
+                if required_keywords:
+                    hit = [kw for kw in required_keywords if kw in agent_messages]
+                    miss = [kw for kw in required_keywords if kw not in agent_messages]
+                    total = len(required_keywords)
+                    matched = len(hit)
+                    normalized_score = (matched / total) if total > 0 else 0.0
+                    reasoning = f"未知 check_type={check_type!r}，按规则处理：命中 {matched}/{total}"
+                    if miss:
+                        evidence = [f"❌ 缺失关键词: {' / '.join(miss)}"]
+                else:
+                    normalized_score = 0.0
+                    reasoning = f"未知 check_type={check_type!r}，无规则配置"
+
+            condition_satisfied = normalized_score >= 0.7
+            satisfied += weight * normalized_score
+
+            details.append(CriterionDetail(
+                condition_id=condition.condition_id,
+                name=condition.name,
+                priority=priority,
+                check_type=check_type,
+                satisfied=condition_satisfied,
+                score=normalized_score,
+                method=method_used,
+                reasoning=reasoning,
+                evidence=evidence,
+                error=error_msg,
+            ))
+
+            # Track P0
+            if priority == "P0":
+                p0_total += 1
+                if condition_satisfied:
+                    p0_passed += 1
+                else:
+                    p0_satisfied = False
+
+        if result is not None:
+            result.p0_satisfied = p0_satisfied
+            result.p0_total = p0_total
+            result.p0_passed = p0_passed
+            result.criterion_details = details
 
         if total_weight > 0:
             return (satisfied / total_weight) * 100
         return 75.0
 
+    def _evaluate_failure_criteria(
+        self,
+        failure_criteria: list[FailureCondition],
+        dialogue_history: list[DialogueTurn],
+    ) -> list[str]:
+        """Evaluate failure conditions - things that should NOT happen.
+
+        Args:
+            failure_criteria: List of failure conditions
+            dialogue_history: Conversation history
+
+        Returns:
+            List of violated condition names
+        """
+        if not failure_criteria:
+            return []
+
+        agent_messages = " ".join(
+            cast(str, t["content"])
+            for t in dialogue_history
+            if t.get("role") == "agent"
+        )
+
+        violations: list[str] = []
+        for condition in failure_criteria:
+            config: dict[str, object] = condition.check_config
+            check_type = condition.check_type
+            priority = condition.priority
+            condition_name = condition.name
+
+            violated = False
+            if check_type == "rule":
+                required_raw = config.get("required_keywords", [])
+                prohibited_raw = config.get("prohibited_keywords", [])
+                required_keywords: list[str] = (
+                    [str(x) for x in required_raw]
+                    if isinstance(required_raw, list)
+                    else []
+                )
+                prohibited_keywords: list[str] = (
+                    [str(x) for x in prohibited_raw]
+                    if isinstance(prohibited_raw, list)
+                    else []
+                )
+
+                if required_keywords:
+                    # If required keywords are NOT found, it's a violation
+                    if not all(kw in agent_messages for kw in required_keywords):
+                        violated = True
+                if prohibited_keywords:
+                    # If prohibited keywords ARE found, it's a violation
+                    if any(kw in agent_messages for kw in prohibited_keywords):
+                        violated = True
+
+            if violated:
+                violations.append(f"[{priority}] {condition_name}")
+
+        return violations
+
     def _generate_failure_reasons(
-        self, result: JudgeResult, task: EvaluationTask
+        self, result: JudgeResult, task: EvaluationTask, weak_th: float = 60.0
     ) -> None:
         """Generate failure reasons and suggestions.
 
@@ -242,6 +546,14 @@ class JudgeEngine:
         """
         if result.passed:
             return
+
+        # Check P0 violations
+        if not result.p0_satisfied:
+            result.failure_reasons.append("存在未满足的关键成功条件 (P0)")
+
+        # Check failure criteria violations
+        for violation in result.failure_violations:
+            result.failure_reasons.append(f"触发失败条件: {violation}")
 
         # Check each metric for failure
         if result.task_success < task.pass_threshold * 100:
@@ -260,13 +572,19 @@ class JudgeEngine:
             result.failure_reasons.append("异常恢复能力不足")
 
         # Generate suggestions
-        if result.task_success < 80.0:
+        if not result.p0_satisfied:
+            result.improvement_suggestions.append("优先确保关键步骤 (P0) 全部完成")
+
+        if result.failure_violations:
+            result.improvement_suggestions.append("避免触发禁用话术和失败条件")
+
+        if result.task_success < weak_th:
             result.improvement_suggestions.append("增加关键信息的传达")
 
-        if result.flow_adherence < 80.0:
+        if result.flow_adherence < weak_th:
             result.improvement_suggestions.append("优化流程执行顺序")
 
-        if result.compliance < 80.0:
+        if result.compliance < weak_th:
             result.improvement_suggestions.append("控制回复长度在要求范围内")
 
         if result.recovery < 70.0:

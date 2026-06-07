@@ -1,0 +1,238 @@
+{
+  "experiment_id": "exp_demo_matrix",
+  "version": "baseline",
+  "timestamp": "2026-06-07T19:02:46.968595",
+  "results": [
+    {
+      "run_id": "exp_demo_matrix_baseline",
+      "experiment_id": "exp_demo_matrix",
+      "version": "baseline",
+      "status": "completed",
+      "total_samples": 30,
+      "passed_samples": 15,
+      "success_rate": 50.0,
+      "avg_score": 0.5,
+      "avg_cost": 0.01,
+      "completed_at": "2026-06-07T19:02:46.968603",
+      "difficulty_levels": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "results_by_difficulty": {
+        "easy": [
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.7,
+            "cost": 0.01,
+            "difficulty": "easy"
+          }
+        ],
+        "medium": [
+          {
+            "passed": true,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.5,
+            "cost": 0.01,
+            "difficulty": "medium"
+          }
+        ],
+        "hard": [
+          {
+            "passed": true,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": true,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          },
+          {
+            "passed": false,
+            "overall_score": 0.3,
+            "cost": 0.01,
+            "difficulty": "hard"
+          }
+        ]
+      },
+      "per_level_aggregates": {
+        "easy": {
+          "difficulty": "easy",
+          "total_samples": 10,
+          "passed_samples": 7,
+          "success_rate": 70.0,
+          "avg_score": 0.7,
+          "avg_cost": 0.01
+        },
+        "medium": {
+          "difficulty": "medium",
+          "total_samples": 10,
+          "passed_samples": 5,
+          "success_rate": 50.0,
+          "avg_score": 0.5,
+          "avg_cost": 0.01
+        },
+        "hard": {
+          "difficulty": "hard",
+          "total_samples": 10,
+          "passed_samples": 3,
+          "success_rate": 30.0,
+          "avg_score": 0.3,
+          "avg_cost": 0.01
+        }
+      }
+    }
+  ]
+}

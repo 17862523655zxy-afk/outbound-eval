@@ -30,10 +30,10 @@ class StateTrackingJudge:
 
     def __init__(self):
         """Initialize the judge."""
-        self.agent_state: dict = {}
-        self.ground_truth_state: dict = {}
+        self.agent_state: dict[str, object] = {}
+        self.ground_truth_state: dict[str, object] = {}
 
-    def set_agent_state(self, state: dict) -> None:
+    def set_agent_state(self, state: dict[str, object]) -> None:
         """Set agent's internal state.
 
         Args:
@@ -42,7 +42,7 @@ class StateTrackingJudge:
         self.agent_state = state
 
     def set_ground_truth(
-        self, dialogue_history: list[dict], expected_outcome: dict
+        self, dialogue_history: list[dict[str, object]], expected_outcome: dict[str, object]
     ) -> None:
         """Set ground truth state from dialogue.
 
@@ -81,6 +81,55 @@ class StateTrackingJudge:
         # Update from expected outcome
         if expected_outcome:
             self.ground_truth_state.update(expected_outcome)
+
+    def extract_state_path(self, dialogue_history: list[dict[str, object]]) -> list[str]:
+        """Extract agent state path from conversation.
+
+        States: INIT -> CONTRACT_NOTIFIED -> REQUIREMENT_EXPLAINED
+                -> RETENTION_ATTEMPTED -> USER_CONFIRMED -> CALL_ENDED
+
+        Args:
+            dialogue_history: Conversation history
+
+        Returns:
+            Ordered list of state names reached.
+        """
+        states: list[str] = ["INIT"]
+        agent_msgs = [t["content"] for t in dialogue_history if t["role"] == "agent"]
+        all_agent_text = " ".join(agent_msgs)
+
+        # CONTRACT_NOTIFIED: agent mentions contract / agreement
+        if any(kw in all_agent_text for kw in ["合同", "协议", "签约", "签署", "已生效", "生效了"]):
+            states.append("CONTRACT_NOTIFIED")
+
+        # REQUIREMENT_EXPLAINED: agent mentions requirements / rules / delivery
+        if any(kw in all_agent_text for kw in ["要求", "规定", "条款", "单数", "配送", "每天", "至少", "排名", "拒单"]):
+            states.append("REQUIREMENT_EXPLAINED")
+
+        # RETENTION_ATTEMPTED: agent attempts to retain / persuade
+        if any(kw in all_agent_text for kw in ["挽留", "再考虑", "补贴", "奖励", "好处", "优势", "稳定", "放心", "解决"]):
+            states.append("RETENTION_ATTEMPTED")
+
+        # USER_CONFIRMED: user shows agreement
+        user_msgs = [t["content"] for t in dialogue_history if t["role"] == "user"]
+        all_user_text = " ".join(user_msgs)
+        if any(kw in all_user_text for kw in ["可以", "好的", "没问题", "愿意", "开始", "配合", "行", "行吧"]):
+            states.append("USER_CONFIRMED")
+
+        # CALL_ENDED: agent says goodbye / thanks
+        if agent_msgs:
+            last_agent = agent_msgs[-1]
+            if any(kw in last_agent for kw in ["再见", "拜拜", "感谢", "谢谢", "祝你", "注意安全"]):
+                states.append("CALL_ENDED")
+
+        # Deduplicate while preserving order
+        seen: set[str] = set()
+        unique_states: list[str] = []
+        for s in states:
+            if s not in seen:
+                seen.add(s)
+                unique_states.append(s)
+        return unique_states
 
     def evaluate(self) -> StateTrackingResult:
         """Evaluate state tracking consistency.

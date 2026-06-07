@@ -23,7 +23,7 @@ class RuleJudgeResult(BaseModel):
 class RuleJudge:
     """Rule-based judge for fast compliance checks."""
 
-    def __init__(self, constraints: dict):
+    def __init__(self, constraints: dict[str, object]):
         """Initialize the judge.
 
         Args:
@@ -80,7 +80,7 @@ class RuleJudge:
         )
 
     def evaluate_conversation(
-        self, dialogue_history: list[dict]
+        self, dialogue_history: list[dict[str, object]]
     ) -> RuleJudgeResult:
         """Evaluate entire conversation.
 

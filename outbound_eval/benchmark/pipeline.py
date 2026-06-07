@@ -4,6 +4,7 @@ import traceback
 import time
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 from outbound_eval.dataset.task import EvaluationTask
 from outbound_eval.dataset.store import DataStore
@@ -78,6 +79,23 @@ class EvalPipeline:
         # Finish monitoring
         monitor.finish_run()
 
+        # Generate evaluation report (HTML + Markdown) — best-effort
+        try:
+            from outbound_eval.reporting.report import ReportBuilder
+            reports_dir = (
+                Path(__file__).resolve().parent.parent.parent
+                / "data" / "results" / "reports"
+            )
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            html_path = reports_dir / f"{run_id}_{timestamp}.html"
+            md_path = reports_dir / f"{run_id}_{timestamp}.md"
+            rb = ReportBuilder(task, results, run_id=run_id, run_name=run_name)
+            rb.save(html_path)
+            md_path.write_text(rb.build_markdown(), encoding="utf-8")
+        except Exception as e:
+            print(f"Report generation skipped: {e}")
+            traceback.print_exc()
+
         return results
 
     def _run_single(
@@ -130,7 +148,7 @@ class EvalPipeline:
         agent_state = agent.get_current_state()
 
         # Judge
-        judge_engine = JudgeEngine()
+        judge_engine = JudgeEngine(llm_client=self.llm_client)
         judge_result = judge_engine.evaluate(
             task=task,
             dialogue_history=dialogue_history,
@@ -169,6 +187,7 @@ class EvalPipeline:
             "flow_adherence_detail": judge_result.flow_adherence_detail.model_dump() if judge_result.flow_adherence_detail else None,
             "state_tracking": judge_result.state_tracking,
             "state_tracking_detail": judge_result.state_tracking_detail.model_dump() if judge_result.state_tracking_detail else None,
+            "state_path": judge_result.state_path,
             "compliance": judge_result.compliance,
             "recovery": judge_result.recovery,
             "naturalness": judge_result.naturalness,
