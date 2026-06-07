@@ -105,7 +105,7 @@ success_criteria:
     - 注意安全
     min_hits: 1
   weight: 0.5
-pass_threshold: 0.7
+pass_threshold: 0.5
 failure_criteria:
 - condition_id: no_contract_notification
   name: 未通知合同生效

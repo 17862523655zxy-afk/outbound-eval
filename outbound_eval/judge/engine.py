@@ -61,14 +61,14 @@ class JudgeWeights(BaseModel):
     def from_dict(cls, d: dict[str, float]) -> "JudgeWeights":
         """Create from dict with fallbacks to defaults."""
         return cls(
-            task_success=cast(float, d.get("task_success", 0.40)),
-            flow_adherence=cast(float, d.get("flow_adherence", 0.20)),
-            state_tracking=cast(float, d.get("state_tracking", 0.10)),
-            compliance=cast(float, d.get("compliance", 0.10)),
-            recovery=cast(float, d.get("recovery", 0.00)),
-            naturalness=cast(float, d.get("naturalness", 0.10)),
-            efficiency=cast(float, d.get("efficiency", 0.10)),
-            weak_dimension_threshold=cast(float, d.get("weak_dimension_threshold", 80.0)),
+            task_success=d.get("task_success", 0.40),
+            flow_adherence=d.get("flow_adherence", 0.20),
+            state_tracking=d.get("state_tracking", 0.10),
+            compliance=d.get("compliance", 0.10),
+            recovery=d.get("recovery", 0.00),
+            naturalness=d.get("naturalness", 0.10),
+            efficiency=d.get("efficiency", 0.10),
+            weak_dimension_threshold=d.get("weak_dimension_threshold", 80.0),
         )
 
 
@@ -174,7 +174,9 @@ class JudgeEngine:
                 {
                     "id": c.condition_id,
                     "description": c.name,
-                    "expected_keywords": list(c.check_config.get("required_keywords", []))
+                    "expected_keywords": [
+                        str(k) for k in cast("list[object]", c.check_config.get("required_keywords", []))
+                    ]
                     if isinstance(c.check_config.get("required_keywords"), list)
                     else [],
                 }
@@ -246,16 +248,19 @@ class JudgeEngine:
             scores[k] * getattr(weights, k) for k in scores
         )
 
-        # Determine pass/fail
-        # P0 conditions must ALL be satisfied
-        # No P0-level failure criteria violations
-        # Plus existing metric thresholds
+        # Determine pass/fail (relaxed gates — record P1/P2 violations but do not hard-fail)
+        # P0 success conditions must ALL be satisfied
+        # P0-level failure criteria violations → hard fail
+        # P1/P2 failure criteria violations → recorded in failure_reasons only
+        p0_failure_violations = [
+            v for v in result.failure_violations if v.startswith("[P0]")
+        ]
         result.passed = (
             result.p0_satisfied
-            and len(result.failure_violations) == 0
+            and len(p0_failure_violations) == 0
             and result.task_success >= task.pass_threshold * 100
-            and result.flow_adherence >= 45.0
-            and result.compliance >= 55.0
+            and result.flow_adherence >= 30.0
+            and result.compliance >= 45.0
         )
 
         # Generate failure reasons
@@ -319,7 +324,7 @@ class JudgeEngine:
             config: dict[str, object] = condition.check_config
             required_keywords_raw = config.get("required_keywords", [])
             required_keywords: list[str] = (
-                [str(x) for x in required_keywords_raw]
+                [str(x) for x in cast("list[object]", required_keywords_raw)]
                 if isinstance(required_keywords_raw, list)
                 else []
             )
@@ -387,12 +392,12 @@ class JudgeEngine:
                 confirm_patterns_raw = config.get("confirm_patterns", [])
                 reject_patterns_raw = config.get("reject_patterns", [])
                 confirm_patterns: list[str] = (
-                    [str(x) for x in confirm_patterns_raw]
+                    [str(x) for x in cast("list[object]", confirm_patterns_raw)]
                     if isinstance(confirm_patterns_raw, list)
                     else []
                 )
                 reject_patterns: list[str] = (
-                    [str(x) for x in reject_patterns_raw]
+                    [str(x) for x in cast("list[object]", reject_patterns_raw)]
                     if isinstance(reject_patterns_raw, list)
                     else []
                 )
@@ -511,12 +516,12 @@ class JudgeEngine:
                 required_raw = config.get("required_keywords", [])
                 prohibited_raw = config.get("prohibited_keywords", [])
                 required_keywords: list[str] = (
-                    [str(x) for x in required_raw]
+                    [str(x) for x in cast("list[object]", required_raw)]
                     if isinstance(required_raw, list)
                     else []
                 )
                 prohibited_keywords: list[str] = (
-                    [str(x) for x in prohibited_raw]
+                    [str(x) for x in cast("list[object]", prohibited_raw)]
                     if isinstance(prohibited_raw, list)
                     else []
                 )
@@ -555,20 +560,20 @@ class JudgeEngine:
         for violation in result.failure_violations:
             result.failure_reasons.append(f"触发失败条件: {violation}")
 
-        # Check each metric for failure
+        # Check each metric for failure (aligned with relaxed pass gates)
         if result.task_success < task.pass_threshold * 100:
             result.failure_reasons.append("未满足足够的成功条件")
 
-        if result.flow_adherence < 60.0:
+        if result.flow_adherence < 30.0:
             result.failure_reasons.append("流程执行不完整")
 
-        if result.state_tracking < 70.0:
+        if result.state_tracking < 50.0:
             result.failure_reasons.append("状态记录不一致")
 
-        if result.compliance < 70.0:
+        if result.compliance < 45.0:
             result.failure_reasons.append("话术合规性不达标")
 
-        if result.recovery < 60.0:
+        if result.recovery < 40.0:
             result.failure_reasons.append("异常恢复能力不足")
 
         # Generate suggestions

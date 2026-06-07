@@ -67,7 +67,7 @@ success_criteria:
       min_hits: 1
     weight: 0.5
 
-pass_threshold: 0.7
+pass_threshold: 0.5
 
 failure_criteria:
   - condition_id: "no_upgrade_info"

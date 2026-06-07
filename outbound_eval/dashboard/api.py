@@ -559,43 +559,6 @@ def get_persona_detail(persona_type: str):
     return detail
 
 
-@app.get("/api/v1/results/{task_id}/{scenario_id}")
-def get_result_detail(task_id: str, scenario_id: str):
-    """Get detailed result for a single scenario."""
-    result = store.load_result_by_scenario(task_id, scenario_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Result not found")
-    return result
-
-
-@app.get("/api/v1/results/{task_id}/{scenario_id}/dialogue")
-def get_dialogue(task_id: str, scenario_id: str):
-    """Get dialogue history for a scenario."""
-    result = store.load_result_by_scenario(task_id, scenario_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Result not found")
-    return {
-        "dialogue_history": result.get("dialogue_history", []),
-        "agent_state": result.get("agent_state", {}),
-    }
-
-
-@app.get("/")
-def dashboard():
-    """Dashboard HTML page."""
-    template_path = Path(__file__).parent / "templates" / "index.html"
-    with open(template_path, "r", encoding="utf-8") as f:
-        html_text = f.read()
-    return HTMLResponse(
-        content=html_text,
-        headers={
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        },
-    )
-
-
 @app.get("/api/v1/results/{task_id}/report")
 def get_result_report(task_id: str):
     """Generate evaluation report JSON for download."""
@@ -655,6 +618,43 @@ def get_result_report(task_id: str):
             for rid, rd in runs.items()
         ],
     }
+
+
+@app.get("/api/v1/results/{task_id}/{scenario_id}/dialogue")
+def get_dialogue(task_id: str, scenario_id: str):
+    """Get dialogue history for a scenario."""
+    result = store.load_result_by_scenario(task_id, scenario_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+    return {
+        "dialogue_history": result.get("dialogue_history", []),
+        "agent_state": result.get("agent_state", {}),
+    }
+
+
+@app.get("/")
+def dashboard():
+    """Dashboard HTML page."""
+    template_path = Path(__file__).parent / "templates" / "index.html"
+    with open(template_path, "r", encoding="utf-8") as f:
+        html_text = f.read()
+    return HTMLResponse(
+        content=html_text,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
+
+
+@app.get("/api/v1/results/{task_id}/{scenario_id}")
+def get_result_detail(task_id: str, scenario_id: str):
+    """Get detailed result for a single scenario."""
+    result = store.load_result_by_scenario(task_id, scenario_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+    return result
 
 
 # ---------------------------------------------------------------------------
