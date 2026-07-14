@@ -1,9 +1,10 @@
 """Dashboard API."""
 
 import threading
+import mimetypes
 from typing import Any, Optional
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 from outbound_eval.dataset.store import DataStore
@@ -26,6 +27,8 @@ trajectory_analyzer = SuccessPatternAnalyzer()
 heatmap_generator = FailureHeatmap()
 tree_generator = FailureTreeGenerator()
 assets = AssetRegistry()
+
+ab_run_status: dict[str, dict[str, Any]] = {}
 
 
 @app.get("/api/v1/settings")
@@ -698,12 +701,21 @@ def list_reports(task_id: str | None = None):
 
 @app.get("/api/v1/reports/download/{filename}")
 def download_report(filename: str):
-    """Stream a generated HTML report."""
+    """Stream a generated report with a correct content type."""
     from fastapi.responses import FileResponse
     target = _REPORTS_DIR / filename
     if not target.exists() or not target.is_file():
         raise HTTPException(status_code=404, detail=f"Report not found: {filename}")
-    return FileResponse(target, media_type="text/html", filename=filename)
+    media_types = {
+        ".html": "text/html; charset=utf-8",
+        ".md": "text/markdown; charset=utf-8",
+        ".pdf": "application/pdf",
+        ".json": "application/json",
+    }
+    media_type = media_types.get(target.suffix.lower())
+    if media_type is None:
+        media_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+    return FileResponse(target, media_type=media_type, filename=filename)
 
 
 @app.post("/api/v1/reports/generate")
@@ -779,7 +791,7 @@ def run_experiment(
     scenarios: int = 5,
     difficulty: str | None = None,
     persona_type: str | None = None,
-    difficulty_levels: list[str] | None = None,
+    difficulty_levels: list[str] | None = Query(default=None),
     scenarios_per_level: int | None = None,
 ):
     """Run A/B experiment comparing two task configurations.
@@ -823,6 +835,17 @@ def run_experiment(
         scenarios_per_level=spl,
     )
 
+    ab_run_status[config.experiment_id] = {
+        "status": "running",
+        "experiment_id": config.experiment_id,
+        "message": "A/B experiment running",
+        "baseline_task_id": baseline_task_id,
+        "candidate_task_id": candidate_task_id,
+        "difficulty_levels": levels,
+        "scenarios_per_level": spl,
+        "is_cross_business": baseline_task_id != candidate_task_id,
+    }
+
     def run_ab():
         try:
             runner = ExperimentRunner()
@@ -848,9 +871,29 @@ def run_experiment(
             store.save_experiment(config.experiment_id, "baseline", [baseline_run.model_dump()])
             store.save_experiment(config.experiment_id, "candidate", [candidate_run.model_dump()])
             store.save_experiment(config.experiment_id, "comparison", [comparison.model_dump()])
+            ab_run_status[config.experiment_id] = {
+                "status": "completed",
+                "experiment_id": config.experiment_id,
+                "message": "A/B experiment completed",
+                "baseline_task_id": baseline_task_id,
+                "candidate_task_id": candidate_task_id,
+                "difficulty_levels": levels,
+                "scenarios_per_level": spl,
+                "is_cross_business": baseline_task_id != candidate_task_id,
+            }
         except Exception as e:
             import traceback
             traceback.print_exc()
+            ab_run_status[config.experiment_id] = {
+                "status": "failed",
+                "experiment_id": config.experiment_id,
+                "message": str(e),
+                "baseline_task_id": baseline_task_id,
+                "candidate_task_id": candidate_task_id,
+                "difficulty_levels": levels,
+                "scenarios_per_level": spl,
+                "is_cross_business": baseline_task_id != candidate_task_id,
+            }
 
     thread = threading.Thread(target=run_ab, daemon=True)
     thread.start()
@@ -928,6 +971,16 @@ def _run_eval_for_task(
         task_id, difficulty or "medium", scenarios, persona_type
     )
 
+
+@app.get("/api/v1/experiments/status/{experiment_id}")
+def get_experiment_status(experiment_id: str):
+    status = ab_run_status.get(experiment_id)
+    if status:
+        return status
+    versions = store.load_experiment_versions(experiment_id)
+    if versions:
+        return {"status": "completed", "experiment_id": experiment_id, "message": "A/B experiment completed"}
+    raise HTTPException(status_code=404, detail="Experiment not found")
 
 @app.get("/api/v1/experiments")
 def list_experiments():

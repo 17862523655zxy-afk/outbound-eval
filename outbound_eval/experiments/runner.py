@@ -5,6 +5,14 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 import uuid
 
+def _persona_distribution_for_level(level: str) -> dict[str, float]:
+    distributions = {
+        "easy": {"cooperative": 0.7, "indecisive": 0.2, "rejection": 0.1, "emotional": 0.0, "off_topic": 0.0},
+        "medium": {"cooperative": 0.3, "indecisive": 0.25, "rejection": 0.25, "emotional": 0.1, "off_topic": 0.1},
+        "hard": {"cooperative": 0.1, "indecisive": 0.2, "rejection": 0.3, "emotional": 0.25, "off_topic": 0.15},
+    }
+    return distributions.get(level, distributions["medium"])
+
 
 class ExperimentConfig(BaseModel):
     """Configuration for an experiment.
@@ -160,40 +168,23 @@ class ExperimentRunner:
         agent = agent_factory(version)
 
         for level in levels:
-            # Clone task and lock difficulty to this level
             try:
-                task = self.task_loader.load(task_id).model_copy(deep=True)
+                result = eval_pipeline(agent, task_id, level)
+            except TypeError:
+                result = eval_pipeline(agent, task_id)
             except Exception as e:
-                print(f"[{run_id}] task load failed for {task_id}: {e}")
+                print(f"[{run_id}] evaluation failed at {level}: {e}")
                 continue
 
-            try:
-                task.difficulty = DifficultyLevel(level)
-            except ValueError:
-                print(f"[{run_id}] invalid difficulty level: {level}")
-                continue
+            if isinstance(result, dict) and isinstance(result.get("results"), list):
+                level_results = result["results"]
+            else:
+                level_results = [result or {}]
 
-            # Generate scenarios locked to this level
-            try:
-                scenarios = self.scenario_generator.generate(
-                    task,
-                    num_scenarios=scenarios_per_level,
-                    difficulty_distribution={level: 1.0},
-                )
-            except Exception as e:
-                print(f"[{run_id}] scenario generation failed at {level}: {e}")
-                scenarios = []
-
-            for _sc in scenarios:
-                try:
-                    result = eval_pipeline(agent, task_id, level)
-                except TypeError:
-                    # Backward-compat: older eval_pipeline may not accept level
-                    result = eval_pipeline(agent, task_id)
-                # Ensure difficulty tag is present
-                if isinstance(result, dict):
-                    result.setdefault("difficulty", level)
-                results_by_diff[level].append(result or {})
+            for item in level_results:
+                if isinstance(item, dict):
+                    item.setdefault("difficulty", level)
+                    results_by_diff[level].append(item)
 
         per_level: dict[str, LevelAggregate] = {
             lvl: self._aggregate_level(lvl, results_by_diff.get(lvl, []))

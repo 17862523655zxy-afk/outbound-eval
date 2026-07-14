@@ -1416,22 +1416,19 @@
                         body: JSON.stringify({ task_id: taskId, format }),
                     });
                 } catch (networkErr) {
-                    // 网络错误或后端无响应：直接退化为 JSON 下载
-                    showStatus('HTML/MD/PDF 不可用，下载 JSON…', '#f59e0b');
-                    return downloadEvalReport('json');
+                    showStatus(format.toUpperCase() + ' 生成接口不可用', '#ef4444');
+                    throw networkErr;
                 }
                 let data;
                 try {
                     data = await resp.json();
                 } catch (jsonErr) {
-                    // 后端返回了非 JSON（HTML 错误页）—— 退化为 JSON
-                    showStatus(`${format.toUpperCase()} 生成失败，转 JSON…`, '#f59e0b');
-                    return downloadEvalReport('json');
+                    showStatus(format.toUpperCase() + " 生成失败：后端返回异常", "#ef4444");
+                    throw jsonErr;
                 }
                 if (!resp.ok) {
-                    // 后端报告生成失败（4xx/5xx）—— 退化为 JSON
-                    showStatus(`${format.toUpperCase()} 失败 (${resp.status})，转 JSON…`, '#f59e0b');
-                    return downloadEvalReport('json');
+                    const detail = data.detail || data.error || ("HTTP " + resp.status);
+                    throw new Error(format.toUpperCase() + " 生成失败：" + detail);
                 }
                 showStatus('下载中…', '#22c55e');
                 // Fetch the file via download_url and save
@@ -2873,15 +2870,54 @@
                 const resp = await fetch(`/api/v1/experiments/run?${params.toString()}`, {
                     method: 'POST',
                 });
-                const data = await resp.json();
-                if (data.status === 'started') {
-                    alert(`A/B 实验已启动: ${data.experiment_id}\n难度切片: ${(data.difficulty_levels || []).join(', ')}\n每档场景数: ${data.scenarios_per_level}`);
-                    loadABExperiments();
+                if (!resp.ok) {
+                    const err = await resp.text();
+                    throw new Error(err || ("HTTP " + resp.status));
                 }
+                const data = await resp.json();
+                    showABStatus("running", "A/B 实验已启动：" + data.experiment_id + "，正在后台运行…");
+                    loadABExperiments();
+                    pollABExperiment(data.experiment_id);
             } catch (e) { console.error(e); }
         }
 
+        function showABStatus(type, message) {
+            const colors = { running: "#3b82f6", completed: "#22c55e", failed: "#ef4444" };
+            const bg = type === "failed" ? "rgba(239,68,68,0.12)" : (type === "completed" ? "rgba(34,197,94,0.12)" : "rgba(59,130,246,0.12)");
+            document.getElementById("ab-comparison-card").style.display = "block";
+            document.getElementById("ab-comparison-content").innerHTML = `<div style="padding:12px;border:1px solid ${colors[type] || "var(--border)"};background:${bg};border-radius:6px;color:${colors[type] || "var(--text)"};font-size:13px;">${message}</div>`;
+        }
+
+        async function pollABExperiment(experimentId) {
+            let attempts = 0;
+            const timer = setInterval(async () => {
+                attempts += 1;
+                try {
+                    const resp = await fetch(`/api/v1/experiments/status/${experimentId}`);
+                    const data = await resp.json();
+                    if (data.status === "completed") {
+                        clearInterval(timer);
+                        showABStatus("completed", "A/B 实验完成，正在加载结果…");
+                        await loadABExperiments();
+                        await loadABComparison(experimentId);
+                    } else if (data.status === "failed") {
+                        clearInterval(timer);
+                        showABStatus("failed", "A/B 实验失败：" + (data.message || "未知错误"));
+                        await loadABExperiments();
+                    } else {
+                        showABStatus("running", "A/B 实验运行中：" + experimentId + "（已等待 " + (attempts * 3) + " 秒）");
+                    }
+                    if (attempts >= 200) {
+                        clearInterval(timer);
+                        showABStatus("running", "A/B 实验仍在运行，请稍后点击实验列表查看结果：" + experimentId);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 3000);
+        }
         async function loadABComparison(experimentId) {
+
             try {
                 const resp = await fetch(`/api/v1/experiments/${experimentId}`);
                 const data = await resp.json();
